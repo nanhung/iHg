@@ -1,0 +1,98 @@
+#-------------------
+# iHgRat Post-MCMC calibration
+#-------------------
+Integrate (Lsodes, 1e-9, 1e-9, 1);
+
+SetPoints ("poppred.out",
+           "poppred.dat", 
+           0,	
+           M_lnPLC, 
+           M_lnPKC, 
+           M_lnPBrnC, 
+           M_lnPRestC,
+           M_lnKabsC,
+           M_lnKunabsC,
+           M_lnKbileC,
+           M_lnKurineC,
+           M_lnKbrnC,
+           V_lnPLC, 
+           V_lnPKC, 
+           V_lnPBrnC, 
+           V_lnPRestC,
+           V_lnKabsC,
+           V_lnKunabsC,
+           V_lnKbileC,
+           V_lnKurineC,
+           V_lnKbrnC);
+
+Distrib (lnPLC, TruncNormal_v, M_lnPLC, V_lnPLC,             0.068, 4.673);       
+Distrib (lnPKC, TruncNormal_v, M_lnPKC, V_lnPKC,             3.472, 8.077);          
+Distrib (lnPBrnC, TruncNormal_v, M_lnPBrnC, V_lnPBrnC,      -2.5, 2.105);    
+Distrib (lnPRestC, TruncNormal_v, M_lnPRestC, V_lnPRestC,   -2.216, 2.389);   
+
+Distrib (lnKabsC, TruncNormal_v, M_lnKabsC, V_lnKabsC,       -6.407, -0.416);
+Distrib (lnKunabsC, TruncNormal_v, M_lnKunabsC, V_lnKunabsC, -3.817, 2.175);
+Distrib (lnKbileC, TruncNormal_v, M_lnKbileC, V_lnKbileC,    -2.966, 3.025);
+Distrib (lnKurineC, TruncNormal_v, M_lnKurineC, V_lnKurineC, -5.521, 0.47);
+Distrib (lnKbrnC, TruncNormal_v, M_lnKbrnC, V_lnKbrnC,       -6.836, 0.073);
+
+
+Simulation { # Experiment 1, NTP 6-month female rats, daily gavage with 312 ug Hg/kg )
+  
+  BW0 = 0.106;
+  BWgrowth=1;
+  sex=1;
+  Growthrate = 0.000063356164;
+  TChng 	= 0.05;
+  
+  # oral and IV administration
+  PDose = PerDose(312, 24,  0, 0.05);
+  IVDose = PerDose(0.0, 24,  0, 0.003);
+  Drink = 0;
+  
+  expowk = PerDose(1.0, 168,  0, 120);
+  expodur =  PerDose(1.0, 4320, 0, 4320);
+  
+  PrintStep (CKU, CLU, CBrnU, 0.5, 4320.5, 1);
+
+} # end of Simulation #1, NTP 6-month female rats
+
+
+Simulation { # Experiment 2, NTP 6-month female rats,  daily gavage with 1250 ug Hg/kg)
+  
+  BW0 = 0.106;
+  BWgrowth=1;
+  sex=1;
+  Growthrate = 0.00006335616;
+  TChng 	= 0.05;
+  
+  # oral and IV administration
+  PDose = PerDose(1250, 24,  0, 0.05);
+  IVDose = PerDose(0.0, 24,  0, 0.003);
+  
+  expowk = PerDose(1.0, 168,  0, 120);
+  expodur =  PerDose(1.0, 4320, 0, 4320);
+  
+  PrintStep (CKU, CLU, CBrnU, 0.5, 4320.5, 1);
+  
+} # end of Simulation #2, NTP 6-month female rats
+
+Simulation { # Experiment 3, NTP 6-month female rats,  daily gavage with 5000 ug Hg/kg)  
+  
+  BW0 = 0.106;
+  BWgrowth=1;
+  sex=1;
+  Growthrate = 0.000063356164;
+  TChng 	= 0.05;
+  
+  # oral and IV administration
+  PDose = PerDose(5000, 24,  0, 0.05);
+  IVDose = PerDose(0.0, 24,  0, 0.003);
+  expowk = PerDose(1.0, 168,  0, 120);
+  expodur =  PerDose(1.0, 4320, 0, 4320);
+  
+  PrintStep (CKU, CLU, CBrnU, 0.5, 4320.5, 1);
+  
+} # end of Simulation #3, NTP 6-month female rats
+
+End. 
