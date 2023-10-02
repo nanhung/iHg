@@ -8,7 +8,7 @@ system("rm -rf outputs")
 dir.create("outputs")
 
 # Compile model code -----------------------------------------------------------
-file.remove("mcsim.butadiene.model.exe")
+file.remove("mcsim.iHgRatBW.model.exe")
 model <- "iHgRatBW.model"
 RMCSim::makemcsim(model = model, mxstep = 5000, dir = "MCSim")
 
