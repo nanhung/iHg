@@ -66,11 +66,11 @@ pars_name <- dimnames(x)[[3]]
 dim(x)
 
 # Posterior check
-str <- floor(dim(x)[1]/2) + 30001
+str <- 1 #floor(dim(x)[1]/2) # + 30001
 end <- dim(x)[1]  
 iters <- str:end 
 
-mnt <- monitor(x[iters, , pars_name[-1]], digit = 4, print = F)
+mnt <- monitor(x[, , pars_name[-1]], digit = 4, print = F)
 print(mnt)
 
 #
