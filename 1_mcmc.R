@@ -17,7 +17,7 @@ input <- "iHgRat.mcmc.in"
 
 # MCMC -------------------------------------------------------------------------
 current_files <- list.files()
-cores <- 3    # 3 chains
+cores <- 4    # 4 chains
 cl <- makeCluster(cores)
 registerDoParallel(cl)
 
