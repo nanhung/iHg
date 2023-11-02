@@ -1,0 +1,25 @@
+Integrate (Lsodes, 1e-9, 1e-11 , 1);
+
+Simulation { # male oral of 15000 ug Hg/kg/d for 60 days
+  
+  BW0 = 0.18;
+  BWgrowth=1;
+  sex=1;
+  Growthrate = 0.000042;
+  TChng 	= 0.05;
+  
+  # oral and IV administration
+  PDose = PerDose(15000, 24,  0, 0.05);
+  IVDose = PerDose(0.0, 24,  0, 0.003);
+  Drink = 0;
+  
+  expowk = PerDose(1.0, 168,  0, 168);
+  expodur =  PerDose(1.0, 1440, 0, 1440);
+  
+  PrintStep (BW, BalanceCheck,  CKU, 0, 2000, 1);
+}
+  
+END.
+
+
+

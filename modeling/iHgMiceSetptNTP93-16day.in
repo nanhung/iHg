@@ -1,0 +1,74 @@
+#-------------------
+# iHgMice Post-MCMC calibration
+## setpts.in.R ####
+#-------------------
+Integrate (Lsodes, 1e-6, 1e-6, 1);
+
+SetPoints ("", "iHgMice_4880.out", 0, 	lnPLC, lnPKC, lnPBrnC, lnPRestC, lnKabsC, lnKunabsC, lnKbileC, lnKurineC, lnKbrnC);
+
+Simulation { # male mice oral of 40000 ug Hg/kg/d for 2 weeks - 12 days
+  
+  BW0 = 0.023;
+  BWgrowth=1;
+  sex=1;
+  Growthrate = 0.00000425;
+  TChng 	= 0.05;
+  
+  # oral and IV administration
+  PDose = PerDose(40000.0, 24,  0, 0.05);
+  IVDose = PerDose(0.0, 24,  0, 0.003);  
+  Drink = 0;
+  
+  expowk =   PerDose(1.0, 168,  0, 120);
+  expodur = PerDose(1.0, 450, 0, 384);
+  
+  Print (CKU, 384);
+  Data  (CKU, 170.892);
+  ### At 40000 ug/kg, male CKUSD. sd <- c(47.7)
+  
+  Print (CLU, 384);
+  Data  (CLU,34.35);
+  ### At 40000 ug/kg, male CKUSD. sd <- c(21.57)
+  
+  Print (CBrnU, 384);
+  Data  (CBrnU, 0.47);
+  ### At 40000 ug/kg, male CBrnUSD. sd <- c(0.376)
+  
+} 
+
+
+
+
+Simulation { # female mice oral of 40000 ug Hg/kg/d for 2 weeks - 12 days
+  
+  BW0 = 0.0179;
+  BWgrowth=0;
+  sex=1;
+  Growthrate = 0.00000625;
+  TChng 	= 0.05;
+  
+  # oral and IV administration
+  PDose = PerDose(40000.0, 24,  0, 0.05);
+  IVDose = PerDose(0.0, 24,  0, 0.003);
+  Drink = 0.0 ;
+  
+  expowk =  PerDose(1.0, 168,  0, 120);
+  expodur = PerDose(1.0, 450, 0, 384);
+  
+  Print (CKU, 384);
+  Data  (CKU, 115.592);
+  ### At 40000 ug/kg, female CKUSD. sd <- c(8.7)
+  
+  Print (CLU, 384);
+  Data  (CLU,29.18);
+  ### At 40000 ug/kg, female CKUSD. sd <- c(10.05)
+  
+  Print (CBrnU, 384);
+  Data  (CBrnU, 0.493);
+  ### At 40000 ug/kg, female CBrnUSD. sd <- c(0.224)
+  
+   
+  } # end of Simulation #1, NTP 16 day (study duration)/12 day (experiment) female mice
+  
+  
+ End. 

@@ -1,0 +1,24 @@
+Integrate (Lsodes, 1e-9, 1e-11 , 1);
+
+Simulation { #single oral dose of 13750 ug Hg/kg/d
+  
+  BW0 = 48;
+  BWgrowth=0;
+  sex=2;
+  Growthrate = 0;
+  TChng 	= 0.05;
+  
+  PDose = PerDose(13750, 24,  0, 0.05);
+  IVDose = PerDose(0, 24,  0, 0.003);
+
+  expowk = PerDose(1.0, 168,  0, 0.05);
+  expodur = PerDose(1.0, 3300, 0, 0.05);
+  Drink = 0.0 ;
+  
+  PrintStep (  BalanceCheck, Aurine, CBldU, CBrnU, 0, 3300, 1);
+ } 
+  
+END.
+
+
+

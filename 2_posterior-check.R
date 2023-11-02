@@ -45,11 +45,6 @@ out <- c("outputs/iHgRat_3365.out",
          "outputs/iHgRat_4880.out",
          "outputs/iHgRat_5916.out")
 
-out <- c("outputs/iHgMice_3365.out",
-         "outputs/iHgMice_6734.out",
-         "outputs/iHgMice_4880.out",
-         "outputs/iHgMice_5916.out")
-
 data <- out |> map(fread) |> map(as.data.frame)
 
 n_chains <- length(data)
@@ -64,12 +59,40 @@ for (i in 1:n_chains) {
 dimnames(x)[[3]] <- names(data[[1]])
 pars_name <- dimnames(x)[[3]]
 dim(x)
+str <- ceiling(nrow(x)/2) + 1
+end <- nrow(x)
+j <- c(str:end) # discard burn-in
+
+# Single chain check
+select_pars <- c("M_lnPLC(1)", "M_lnPKC(1)", "M_lnPBrnC(1)", "M_lnPBrnC(1)",
+                 "M_lnPRestC(1)", "M_lnKabsC(1)", "M_lnKunabsC(1)", "M_lnKbileC(1)",
+                 "M_lnKurineC(1)", "M_lnKbrnC(1)")
+
+single_chain <- fread("outputs/iHgRat_3365.out") |> as.data.frame()
+dim(single_chain)
+par(mfrow = c(2,5), mar = c(2,2,2,1))
+for (i in seq(10)){
+  plot(single_chain[j,1], single_chain[j,select_pars[i]], type = "l", main = select_pars[i])
+}
+
+# Trace plot
+par(mfrow = c(2,5), mar = c(2,2,4,1))
+for (i in seq(10)){
+  acf(single_chain[j,select_pars[i]], main = select_pars[i])
+}
+
+# Density plot
+par(mfrow = c(2,5), mar = c(2,2,2,1))
+for (i in seq(10)){
+  single_chain[j,select_pars[i]] |> density() |> plot(type = "l", main = select_pars[i])
+}
+
+
+
+
 
 # Posterior check
-str <- 1 #floor(dim(x)[1]/2) # + 30001
-end <- dim(x)[1]  
 iters <- str:end 
-
 mnt <- monitor(x[, , pars_name[-1]], digit = 4, print = F)
 print(mnt)
 

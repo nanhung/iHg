@@ -1,0 +1,28 @@
+Integrate (Lsodes, 1e-9, 1e-11 , 1);
+
+Simulation { #Female A.SW (H-2s) mice, daily drinking water of 148 µg Hg/kg (from 8 mg HgCl2/L) 
+  
+  BW0 = 0.02;
+  BWgrowth=2;
+  sex=2;
+  Growthrate = 0;
+  TChng 	= 0.05;
+  
+  # oral and IV administration
+  PDose = PerDose(0.0, 24,  0, 0.05);
+  IVDose = PerDose(0, 24,  0, 0.003);
+  Drink = 148.0;
+  
+  expowk = 1;
+  expodur = 1;
+ 
+  PrintStep (BalanceCheck, KDrink, CKU, 0, 50, 1);
+  
+  #
+ } 
+  
+
+END.
+
+
+

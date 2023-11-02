@@ -1,0 +1,844 @@
+---
+title: "iHg - Markov chain Monte Carlo Calibration"
+author: "Nan-Hung Hsieh" modified by "Yu-Sheng Lin"
+date: "2022/02/05 (update: `r Sys.Date()`)"
+# Run Monte Carlo and Uncertainty analysis for better estimation the range for parameter values
+# if needed (the last section)
+# cd ./mcsim-6.2.0/IRIS_iHg/modeling/RatHier
+# makemcsim iHgRatBW.model
+# ./mcsim.iHgRatBW.model iHgRat.MCMCHier.in
+
+output: 
+  html_document:
+  fig_caption: yes  
+---
+# cd ./mcsim-6.2.0/IRIS_iHg/modeling/RatHier
+
+```{r setup, include=FALSE}
+#knitr::opts_chunk$set(echo = TRUE)
+#setwd('..')
+#wd <- getwd()
+#knitr::opts_knit$set(root.dir =  wd)
+```
+
+# 0 Prerequisites
+```{r, include=FALSE}
+#source("MCSim/function.R")
+source("function.R")
+```
+
+# Import the R packages
+```{R message=FALSE, warning=FALSE}
+library(tidyverse)
+library(rstan)
+library(bayesplot)
+library(corrplot)
+library(sensitivity)
+library(pksensi)
+library(data.table)
+library(coda)
+theme_set(theme_light())
+```
+
+##### 2. QA/QC check
+
+
+##### 2.1 Balance check and gavage calculation check --- dynamic body weight change only for rats
+```{r}
+model <- "iHgRatBW.model"
+input <- "iHgRatRothsteinBW.in"
+test <- mcsim(model = model, input = input, dir = "modeling")
+testex <- readsims(test,  exp=1) 
+plot (testex$Time, testex$BalanceCheck, xlim = c(0, 2200), ylim = c(-0.000001, 0.000001),  type="l", lwd=2, xlab="Time", ylab="mass balance")
+```
+
+
+##### 3. Individual study
+
+##### 3.1. Male Wistar rats  w/ single IV dose of 250 µg Hg/kg (50 µg 203Hg from Hg(NO3)2: (1982-Rothstein)##### Table 1/Figure 1
+
+# Urine#
+```{r}
+Roth <- mcsim(model = "iHgRatBW.model", input = "iHgRatRothsteinBW.in", dir = "modeling")
+data_t <- c(24,	48,	144,	360);
+data_c <- c(1.306962025,	2.458860759,	3.743670886,	6.091772152);
+
+plot (data_t, data_c,  main = "Rothstein, Male rat, single IV = 250 ug/kg", xlim = c(0, 1280), ylim = c(0.1, 100),  lwd=1, xlab="Time", ylab="Amount of urinary excretion (ug)", log='y')
+lines(Roth$Time, Roth$Aurine)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+# feces#
+```{r}
+data_t <- c(24,	48,	144,	360);
+data_c <- c(3.344936709, 6.82278481, 10.65506329, 13.18037975);
+
+plot (data_t, data_c,  main = "Rothstein, Male rat, single IV = 250 ug/kg", xlim = c(0, 1280), ylim = c(1, 100),  lwd=1, xlab="Time", ylab="Amount of fecal excretion (ug)", log='y')
+lines(Roth$Time, Roth$Afeces)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+# brain
+```{r}
+data_t <- c(24,	48,	144,	360);
+data_c <- c(0.01754386 , 0.01754386 , 0.01754386 , 0.013157895);
+
+plot (data_t, data_c,  main = "Rothstein, Male rat, single IV = 250 ug/kg", xlim = c(0, 400), ylim = c(0.00001, 1000),  lwd=1, xlab="Time", ylab="Hg conc in brain (ug/g)", log='y')
+lines(Roth$Time, Roth$CBrnU)
+legend("topright", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+# liver
+```{r}
+data_t <- c(24,	48,	144,	360);
+data_c <- c(0.332142857 , 0.224285714 , 0.121428571 , 0.04);
+
+plot (data_t, data_c,  main = "Rothstein, Male rat, single IV = 250 ug/kg", xlim = c(0, 1280), ylim = c(0.00001, 11),  lwd=1, xlab="Time", ylab="Hg conc in liver (ug/g)", log='y')
+lines(Roth$Time, Roth$CLU)
+legend("topright", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+# kidney#
+```{r}
+data_t <- c(24,	48,	144,	360);
+data_c <- c(0.74702381 , 0.694047619 , 1.047321429 , 1.045535714);
+
+plot (data_t, data_c, main = "Rothstein, Male rat, single IV = 250 ug/kg", xlim = c(0, 1280), ylim = c(0.001, 20),  lwd=1, xlab="Time", ylab="Hg conc in kidney (ug/g)", log='y')
+lines(Roth$Time, Roth$CKU)
+legend("topright", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 2. Oriquat, 2013, Male albino rats 
+```{r}
+Oriquat <- mcsim(model = model, input = "iHgRatOriquatBW.in", dir = "modeling")
+Oriquat2770  <- readsims(Oriquat, exp=1)
+```
+
+##### 2. Oriquat, 2013, Male albino rats : liver 
+```{r}
+data_t <- c(2016);
+data_c <- c(12.6155464948047);
+
+plot(data_t, data_c, main = "Oriquat, 2013, Male albino rats, Oral = 2770, Male rat", xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 2016), ylim = c(0.1, 100), log='y')
+lines(Oriquat2770$Time, Oriquat2770$CLU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 2. Oriquat, 2013, Male albino rats : kidney 
+```{r}
+data_t <- c(2016);
+data_c <- c(20.3240826);
+
+plot(data_t, data_c, main = "Oriquat, 2013, Male albino rats, Oral = 2770, Male rat", xlab = "Time (hr)", ylab = "CK (ug/g)", xlim = c(0, 2016), ylim = c(1, 300), log='y')
+lines(Oriquat2770$Time, Oriquat2770$CKU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 2. Oriquat, 2013, Male albino rats : brain 
+```{r}
+data_t <- c(2016);
+data_c <- c(3.58834670524);
+
+plot(data_t, data_c, main = "Oriquat, 2013, Male albino rats, Oral = 2770, Male rat", xlab = "Time (hr)", ylab = "CBrn (ug/g)", xlim = c(0, 2016), ylim = c(0.01, 10), log='y')
+lines(Oriquat2770$Time, Oriquat2770$CBrnU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+##### 2. Oriquat, 2013, Male albino rats : blood
+```{r}
+data_t <- c(672 , 1344 , 2016);
+data_c <- c(0.042074074 , 0.047703704 , 0.057777778);
+
+plot(data_t, data_c, main = "Oriquat, 2013, Male albino rats, Oral = 2770, Male rat", xlab = "Time (hr)", ylab = "CBld (ug/g)", xlim = c(0, 2016), ylim = c(0.01, 10), log='y')
+lines(Oriquat2770$Time, Oriquat2770$CBldU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 3. Morcillo 1995, Male albino rats 
+```{r}
+Morcillo <- mcsim(model = model, input = "iHgRatMorcilloBW.in", dir = "modeling")
+Morcillo5  <- readsims(Morcillo, exp=1)
+Morcillo50  <- readsims(Morcillo, exp=2)
+Morcillo500  <- readsims(Morcillo, exp=3)
+```
+
+##### 3. Morcillo, 1995, Male albino rats : blood, 5 uM
+```{r}
+data_t <- c(168 , 336 , 504 , 672 , 840 , 1008 , 1176 , 1344);
+data_c <- c(0.00848	,	0.01066	,	0.01045	,	0.0107	,	0.01127	,	0.00811	,	0.00659	,	0.00525);
+sd <- c(0.00096	,	0.00147	,	0.00104	,	0.00121	,	0.00143	,	0.00094	,	0.00107	,	0.00028)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Morcillo, 1995, Male albino rats, 5 uM Hg Drinking", xlab = "Time (hr)", ylab = "CBld (ug/ml)", xlim = c(0, 1344), ylim = c(0.0001, 100), log='y')
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+lines(Morcillo5$Time, Morcillo5$CBldU)
+legend("topright", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 3. Morcillo, 1995, Male albino rats : blood, 50 uM
+```{r}
+data_t <- c(168 , 336 , 504 , 672 , 840 , 1008 , 1176 , 1344);
+data_c <- c(0.07167	,	0.05471	,	0.06394	,	0.06063	,	0.04959	,	0.06375	,	0.06978	,	0.05874);
+sd <- c(0.01738	,	0.00916	,	0.00178	,	0.00768	,	0.00752	,	0.00599	,	0.019	,	0.00872)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Morcillo, 1995, Male albino rats, 50 uM Hg Drinking", xlab = "Time (hr)", ylab = "CBld (ug/ml)", xlim = c(0, 1344), ylim = c(0.001, 1000), log='y')
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+lines(Morcillo50$Time, Morcillo50$CBldU)
+legend("topright", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 3. Morcillo, 1995, Male albino rats : blood, 500 uM
+```{r}
+data_t <- c(168 , 336 , 504 , 672 , 840 , 1008 , 1176 , 1344);
+data_c <- c(0.29892 , 0.1852 , 0.21552 , 0.34776 , 0.28396 , 0.32497 , 0.2738 , 0.25756); 
+sd <- c(0.10742, 0.06721, 0.06263, 0.05135, 0.04766, 0.07845, 0.0847, 0.05003)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Morcillo, 1995, Male albino rats, 500 uM Hg Drinking", xlab = "Time (hr)", ylab = "CBld (ug/ml)", xlim = c(0, 1344), ylim = c(0.01, 10), log='y')
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+lines(Morcillo500$Time, Morcillo500$CBldU)
+legend("topright", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 3. Morcillo, 1995, Male albino rats : feces, 5 uM
+```{r}
+data_t <- c(168 , 336 , 504 , 672 , 840 , 1008 , 1176 , 1344);
+data_c <- c(86.20689655 , 206.8965517 , 327.5862069 , 448.2758621 , 586.2068966 , 724.137931 , 853.4482759, 984.615385);
+
+plot(data_t, data_c, main = "Morcillo, 1995, Male albino rats, 5 uM Hg Drinking", xlab = "Time (hr)", ylab = "Afeces (ug)", xlim = c(0, 1344), ylim = c(10, 1000), log='y')
+lines(Morcillo5$Time, Morcillo5$Afeces)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 3. Morcillo, 1995, Male albino rats : feces, 50 uM
+```{r}
+data_t <- c(168 , 336 , 504 , 672 , 840 , 1008 , 1176 , 1344);
+data_c <- c(939.1304348 , 2086.956522 , 3339.130435 , 5113.043478 , 6260.869565 , 7513.043478 , 8869.565217 , 10121.73913);
+
+plot(data_t, data_c, main = "Morcillo, 1995, Male albino rats, 50 uM Hg Drinking", xlab = "Time (hr)", ylab = "Afeces (ug)", xlim = c(0, 1344), ylim = c(100, 100000), log='y')
+lines(Morcillo50$Time, Morcillo50$Afeces)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 3. Morcillo, 1995, Male albino rats : feces, 500 uM
+```{r}
+data_t <- c(168 , 336 , 504 , 672 , 840 , 1008 , 1176 , 1344);
+data_c <- c(6410.25641 , 14102.5641 , 21153.84615 , 28846.15385 , 37179.48718 , 45512.82051 , 53205.12821 , 60897.4359);
+
+plot(data_t, data_c, main = "Morcillo, 1995, Male albino rats, 500 uM Hg Drinking", xlab = "Time (hr)", ylab = "Afeces (ug)", xlim = c(0, 1344), ylim = c(100, 100000), log='y')
+lines(Morcillo500$Time, Morcillo500$Afeces)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 3. Morcillo, 1995, Male albino rats : urine, 5 uM
+```{r}
+data_t <- c(168 , 336 , 504 , 672 , 840 , 1008 , 1176 , 1344);
+data_c <- c(0.25862069 , 0.603448276 , 1.724137931 , 3.448275862 , 4.913793103 , 6.637931034 , 8.362068966 , 9.827586207);
+
+plot(data_t, data_c, main = "Morcillo, 1995, Male albino rats, 5 uM Hg Drinking", xlab = "Time (hr)", ylab = "Aurine (ug)", xlim = c(0, 1344), ylim = c(0.1, 100), log='y')
+lines(Morcillo5$Time, Morcillo5$Aurine)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 3. Morcillo, 1995, Male albino rats : urine, 50 uM
+```{r}
+data_t <- c(168 , 336 , 504 , 672 , 840 , 1008 , 1176 , 1344);
+data_c <- c(1.824137931 , 8.720689655 , 17.24137931 , 29.31034483 , 53.44827586 , 87.93103448 , 120.6896552 , 163.7931034);
+
+plot(data_t, data_c, main = "Morcillo, 1995, Male albino rats, 50 uM Hg Drinking", xlab = "Time (hr)", ylab = "Aurine (ug)", xlim = c(0, 1344), ylim = c(1, 1000), log='y')
+lines(Morcillo50$Time, Morcillo50$Aurine)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 3. Morcillo, 1995, Male albino rats : urine, 500 uM
+```{r}
+data_t <- c(168 , 336 , 504 , 672 , 840 , 1008 , 1176 , 1344);
+data_c <- c(215.5172414 , 818.9655172 , 1379.310345 , 2068.965517 , 2672.413793 , 3405.172414 , 4224.137931 , 4827.586207);
+
+
+plot(data_t, data_c, main = "Morcillo, 1995, Male albino rats, 500 uM Hg Drinking", xlab = "Time (hr)", ylab = "Aurine (ug)", xlim = c(0, 1344), ylim = c(10, 10000), log='y')
+lines(Morcillo500$Time, Morcillo500$Aurine)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+
+
+##### 4. Male and Female F344 rats with oral gavage of 230 to 3690 µg Hg/kg/d for 6 months (Ntp 1993):   
+```{r}
+Ntp1993Rat <- mcsim(model = model, input = "iHgRatNtp1993BW.in", dir = "modeling")
+Ntp1993RatMale230  <- readsims(Ntp1993Rat, exp=1)
+Ntp1993RatMale920  <- readsims(Ntp1993Rat, exp=2)
+Ntp1993RatMale3690<- readsims(Ntp1993Rat, exp=3)
+Ntp1993RatFemale230  <- readsims(Ntp1993Rat, exp=4)
+Ntp1993RatFemale920  <- readsims(Ntp1993Rat, exp=5)
+Ntp1993RatFemale3690<- readsims(Ntp1993Rat, exp=6)
+```
+
+##### 4. Male F344 rats with oral gavage of 230 µg Hg/kg/d for 6 months (Ntp 1993): liver --- NTP --- QA or background contamination issue 
+```{r}
+data_t <- c(1428, 2868, 4308);
+data_c <- c(0.31, 0.11, 0.11);
+
+plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 230, Male rat", xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 4320), ylim = c(0.01, 20), log='y')
+lines(Ntp1993RatMale230$Time, Ntp1993RatMale230$CLU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 4. Male F344 rats with oral gavage of 230 µg Hg/kg/d for 6 months (Ntp 1993): kidney 
+```{r}
+data_t <- c(1428, 2868,	4308);
+data_c <- c(22.95, 33.67,47.8);
+sd <- c(1.2,	4.67,	14.7)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 230, Male rat", xlab = "Time (hr)", ylab = "CK (ug/g)", xlim = c(0, 4320), ylim = c(1, 100), log='y')
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+lines(Ntp1993RatMale230$Time, Ntp1993RatMale230$CKU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 4. Male F344 rats with oral gavage of 920 µg Hg/kg/d for 6 months (Ntp 1993): liver 
+```{r}
+data_t <- c(1428, 2868,	4308);
+data_c <- c(0.17, 0.29,	0.41);
+
+plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 920, Male rat", xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 4320), ylim = c(0.01, 20), log='y')
+lines(Ntp1993RatMale920$Time, Ntp1993RatMale920$CLU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 4. Male F344 rats with oral gavage of 920 µg Hg/kg/d for 6 months (Ntp 1993): kidney 
+```{r}
+data_t <- c(1428, 2868,	4308);
+data_c <- c(60.05, 64.77, 89.5);
+
+plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 920, Male rat", xlab = "Time (hr)", ylab = "CK (ug/g)", xlim = c(0, 4320), ylim = c(1,500), log='y')
+lines(Ntp1993RatMale920$Time, Ntp1993RatMale920$CKU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 4. Male F344 rats with oral gavage of 3690 µg Hg/kg/d for 6 months (Ntp 1993): liver 
+```{r}
+data_t <- c(1428, 2868,	4308);
+data_c <- c(0.84, 1.66, 1.7);
+
+plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 3690, Male rat", xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 4320), ylim = c(0.1, 100), log='y')
+lines(Ntp1993RatMale3690$Time, Ntp1993RatMale3690$CLU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 4. Male F344 rats with oral gavage of 3690 µg Hg/kg/d for 6 months (Ntp 1993): kidney 
+```{r}
+data_t <- c(1428, 2868,	4308);
+data_c <- c(93.55, 85.97, 92.1);
+sd <- c(39.5, 8.75, 4.57)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 3690, Male rat", xlab = "Time (hr)", ylab = "CK (ug/g)", xlim = c(0, 4320), ylim = c(1, 2000), log='y')
+lines(Ntp1993RatMale3690$Time, Ntp1993RatMale3690$CKU)
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 4. Male F344 rats with oral gavage of 3690 µg Hg/kg/d for 6 months (Ntp 1993): brain 
+```{r}
+data_t <- c(1428,  4308);
+data_c <- c(0.05,	 0.01);
+sd <- c(0.02, 0.01)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 3690, Male rat", xlab = "Time (hr)", ylab = "CBrn (ug/g)", xlim = c(0, 4320), ylim = c(0.001, 10), log='y')
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+lines(Ntp1993RatMale3690$Time, Ntp1993RatMale3690$CBrnU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 4. Female F344 rats with oral gavage of 230 µg Hg/kg/d for 6 months (Ntp 1993): liver / data QA
+```{r}
+data_t <- c(1428, 2868,	4308);
+data_c <- c(0.23, 0.14, 0.14);
+
+plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 230, Female rat", xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 4320), ylim = c(0.001, 10), log='y')
+lines(Ntp1993RatFemale230$Time, Ntp1993RatFemale230$CLU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 4. Female F344 rats with oral gavage of 230 µg Hg/kg/d for 6 months (Ntp 1993): kidney 
+```{r}
+data_t <- c(1428, 2868,	4308);
+data_c <- c(29.37, 55.59, 46.98);
+sd <- c(4.29, 8.39, 14.5)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 230, Female rat", xlab = "Time (hr)", ylab = "CK (ug/g)", xlim = c(0, 4320), ylim = c(1, 100), log='y')
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+lines(Ntp1993RatFemale230$Time, Ntp1993RatFemale230$CKU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 4. Female F344 rats with oral gavage of 920 µg Hg/kg/d for 6 months (Ntp 1993): liver 
+```{r}
+data_t <- c(1428, 2868,	4308);
+data_c <- c(0.05, 0.38, 0.44);
+sd <- c(0.04, 0.51, 0.07)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 920, Female rat", xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 4320), ylim = c(0.01, 20), log='y')
+lines(Ntp1993RatFemale920$Time, Ntp1993RatFemale920$CLU)
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 4. Female F344 rats with oral gavage of 920 µg Hg/kg/d for 6 months (Ntp 1993): kidney 
+```{r}
+data_t <- c(1428, 2868,	4308);
+data_c <- c(100.87, 97.19, 86.08);
+sd <- c(21.2, 8.06, 13.6)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 920, Female rat", xlab = "Time (hr)", ylab = "CK (ug/g)", xlim = c(0, 4320), ylim = c(1, 1000), log='y')
+lines(Ntp1993RatFemale920$Time, Ntp1993RatFemale920$CKU)
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 4. Female F344 rats with oral gavage of 3690 µg Hg/kg/d for 6 months (Ntp 1993): liver 
+```{r}
+data_t <- c(1428, 2868,	4308);
+data_c <- c(1.00, 1.62, 1.86);
+sd <- c(0.5, 0.27, 0.26)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 3690, Female rat", xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 4320), ylim = c(0.1, 100), log='y')
+lines(Ntp1993RatFemale3690$Time, Ntp1993RatFemale3690$CLU)
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 4. Female F344 rats with oral gavage of 3690 µg Hg/kg/d for 6 months (Ntp 1993): kidney 
+```{r}
+data_t <- c(1428, 2868,	4308);
+data_c <- c(101.87, 122.19, 92.78);
+sd <- c(24.5, 9.87, 7.29)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 3690, Female rat", xlab = "Time (hr)", ylab = "CK (ug/g)", xlim = c(0, 4320), ylim = c(1, 1000), log='y')
+lines(Ntp1993RatFemale3690$Time, Ntp1993RatFemale3690$CKU)
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 4. Female F344 rats with oral gavage of 3690  µg Hg/kg/d for 6 months (Ntp 1993): brain 
+```{r}
+data_t <- c(1428,  4308);
+data_c <- c(0.06,  0.01);
+sd <- c(0.04, 0.001)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 3690, Female rat", xlab = "Time (hr)", ylab = "CBrn (ug/g)", xlim = c(0, 4320), ylim = c(0.001, 10), log='y')
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+lines(Ntp1993RatFemale3690$Time, Ntp1993RatFemale3690$CBrn)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 5. Male and Female F344 rats with oral gavage of 14780 µg Hg/kg/d for 16 days (Ntp 1993):  
+```{r}
+Ntp1993Ratwks <- mcsim(model, input = "iHgRatNtp1993wksBW.in", dir = "modeling")
+Ntp1993Male14780 <- readsims(Ntp1993Ratwks, exp=1)
+Ntp1993Female14780 <- readsims(Ntp1993Ratwks, exp=2)
+```
+
+##### 5. Male F344 rats with oral gavage of 14780 µg Hg/kg/d for 16 days (Ntp 1993): liver 
+```{r}
+data_t <- c(384);
+data_c <- c(5.49);
+sd <- c(1.21)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Ntp 1993, 16 day, Oral = 14780, Male rat", xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 400), ylim = c(0.1, 100), log='y')
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+lines(Ntp1993Male14780$Time, Ntp1993Male14780$CLU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 5. Male F344 rats with oral gavage of 14780 µg Hg/kg/d for 16 days (Ntp 1993): kidney 
+```{r}
+data_t <- c(384);
+data_c <- c(44.9);
+sd <- c(11.7)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Ntp 1993, 16 day, Oral = 14780, Male rat", xlab = "Time (hr)", ylab = "CK (ug/g)", xlim = c(0, 400), ylim = c(1, 2000), log='y')
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+lines(Ntp1993Male14780$Time, Ntp1993Male14780$CKU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 5. Male F344 rats with oral gavage of 14780 µg Hg/kg/d for 16 days (Ntp 1993): brain 
+```{r}
+data_t <- c(384);
+data_c <- c(0.203);
+sd <- c(0.27)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Ntp 1993, 16 day, Oral = 14780, Male rat", xlab = "Time (hr)", ylab = "CBrn (ug/g)", xlim = c(0, 400), ylim = c(0.001, 10), log='y')
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+lines(Ntp1993Female14780$Time, Ntp1993Female14780$CBrnU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 5. Female F344 rats with oral gavage of 14780 µg Hg/kg/d for 16 days (Ntp 1993): liver 
+```{r}
+data_t <- c(384);
+data_c <- c(4.31);
+sd <- c(1.3)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Ntp 1993, 16 day, Oral = 14780, Female rat", xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 400), ylim = c(1, 20), log='y')
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+lines(Ntp1993Female14780$Time, Ntp1993Female14780$CLU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 5. Female F344 rats with oral gavage of 14780 µg Hg/kg/d for 16 days (Ntp 1993): kidney 
+```{r}
+data_t <- c(384);
+data_c <- c(42.4);
+sd <- c(16.4)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Ntp 1993, 16 day, Oral = 14780, Female rat", xlab = "Time (hr)", ylab = "CK (ug/g)", xlim = c(0, 400), ylim = c(1, 2000), log='y')
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+lines(Ntp1993Female14780$Time, Ntp1993Female14780$CKU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 5. Female F344 rats with oral gavage of 14780 µg Hg/kg/d for 16 days (Ntp 1993): brain 
+```{r}
+data_t <- c(384);
+data_c <- c(0.31);
+sd <- c(0.15)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Ntp 1993, 16 day, Oral = 14780, Female rat", xlab = "Time (hr)", ylab = "CBrn (ug/g)", xlim = c(0, 400), ylim = c(0.01, 10), log='y')
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+lines(Ntp1993Female14780$Time, Ntp1993Female14780$CBrnU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 6. Shi 2011, Male SD rats 
+```{r}
+Shi <- mcsim(model, input = "iHgRatShi2011BW.in", dir = "modeling")
+Shi15000  <- readsims(Shi, exp=1)
+```
+
+##### 6. Shi 2011, Male SD rats : kidney
+```{r}
+data_t <- c(1450);
+data_c <- c(89.83957219);
+sd <- c(72)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Shi, 2011, Male SD rats, 15000 ug/kg", xlab = "Time (hr)", ylab = "CKU (ug/g)", xlim = c(0, 1500), ylim = c(1, 1000), log='y')
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+lines(Shi15000$Time, Shi15000$CKU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 7. Zhang 2007, Male SD rats 
+```{r}
+Zhang25560 <- mcsim(model, input = "iHgRatZhang2017BW.in", dir = "modeling")
+Zhang <- readsims(Zhang25560, exp=1)
+```
+
+##### 7. Zhang 2007, Male SD rats : kidney
+```{r}
+data_t <- c(168);
+data_c <- c(265);
+sd <- c(33.6)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Zhang 2017, SD rats, 25,560 ug/kg", xlab = "Time (hr)", ylab = "CKU (ug/g)", xlim = c(0, 168), ylim = c(1, 1000), log='y')
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+lines(Zhang$Time, Zhang$CKU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+
+##### 7. Zhang 2007, Male SD rats : liver
+```{r}
+data_t <- c(168);
+data_c <- c(35.36);
+sd <- c(34.272)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Zhang 2017, SD rats, 25,560 ug/kg", xlab = "Time (hr)", ylab = "CLU (ug/g)", xlim = c(0, 168), ylim = c(1, 1000), log='y')
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+lines(Zhang$Time, Zhang$CLU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+#### 2.5 Multi chains testing ### 
+#### MCMC Modeling ###
+### Using Ubuntu instead ###
+
+```{r, eval=F}
+out <- c("outputs/iHgRat_3365.out",
+         "outputs/iHgRat_6734.out",
+         "outputs/iHgRat_4880.out",
+         "outputs/iHgRat_5916.out")
+data <- out |> map(fread) |> map(as.data.frame)
+n_chains <- length(data)
+sample_number <- dim(data[[1]])[1]
+dim <- c(sample_number, n_chains, dim(data[[1]])[2])
+n_iter <- dim(data[[1]])[1]
+n_param <- dim(data[[1]])[2]
+x <- array(sample_number:(n_iter * n_chains * n_param), dim = dim)
+
+str <- ceiling(nrow(x)/2) + 1
+end <- nrow(x)
+j <- c(str:end) # discard burn-in
+```
+
+# Size of output summary
+```{r}
+dim(x)
+# X [iteration, chain, parameter]
+```
+
+# Single chain check
+# Checking model fit using one single chain #
+# Global evaluation/ "MCMC.check.out" has "Data" and "Predicion"
+```{r}
+single_1 <- fread("outputs/iHgRat_3365.out") |> as.data.frame()
+tail(single_1)
+```
+
+## Result diagnosis ##
+# Trace plot
+```{r}
+str <- ceiling(nrow(single_1)/2) + 1
+end <- nrow(single_1)
+j <- c(str:end) # discard burn-in
+par(mfrow = c(3,4), mar = c(2,2,2,1))
+for (i in 2:52){
+  plot(single_1[j,1], single_1[j,i], type = "l", main = names(single_1)[i])
+}
+```
+
+# Auto correlation
+```{r}
+par(mfrow = c(3,4), mar = c(2,2,4,1))
+for (i in 2:52){
+  acf(single_1[j,i], main = names(single_1)[i])
+  abline(0.5, 0, col=2, lty=2)
+}
+```
+
+# Density plot
+```{r}
+par(mfrow = c(3,4), mar = c(2,2,2,1))
+for (i in 2:52){
+  single_1[j,i] %>% density() %>% plot(type = "l", main = names(single_1)[i])
+}
+```
+
+# Correlation matrix
+```{r}
+single_1[,8:16] %>% cor() %>% corrplot(method = "number")
+```
+
+# Global evaluation/ "MCMC.check.out" has "Data" and "Predicion"
+# Check simulation result with the parameter from the last iteration
+```{r}
+chk_1 <- read.delim("outputs/iHgRat_check_6734.out")
+chk_1 <- chk_1[which(chk_1$Data>0),]
+tail(chk_1)
+```
+
+# Overall fitting evaluation
+```{r}
+R_square <- cor(chk_1$Data, chk_1$Prediction)^2
+plot(chk_1$Data, chk_1$Prediction, log = "xy",
+     xlim = c(0.001, 1000), ylim = c(0.001, 1000),
+     xlab = "Observation", ylab = "Prediction",
+     main = paste("R2 =", round(R_square, digits = 3)))
+abline(0,1)
+```
+
+# Individual measurement fitting evaluation 
+# (1) amount of iHg in feces
+```{r}
+chk_1 %>% filter(Output_Var == "Afeces") %>%
+ggplot(aes(x = Time, y = Data)) +
+  geom_point() + 
+  geom_line(aes(y = Prediction))+
+  facet_wrap(~Simulation) +
+  scale_y_log10() + 
+  labs(x = "Time (min)", y = "amount (ug)", title = "amount of iHg in feces (ug)")
+```
+
+# (2) amount of iHg in urine
+```{r}
+chk_1 %>% filter(Output_Var == "Aurine") %>%
+ggplot(aes(x = Time, y = Data)) +
+  geom_point() + 
+  geom_line(aes(y = Prediction))+
+  facet_wrap(~Simulation) +
+  scale_y_log10() + 
+  labs(x = "Time (min)", y = "amount (ug)", title = "amount of iHg in urine (ug)")
+```
+
+# (3) concentratio of iHg in blood (ug/ml)
+```{r}
+chk_1 %>% filter(Output_Var == "CBldU") %>%
+ggplot(aes(x = Time, y = Data)) +
+  geom_point() + 
+  geom_line(aes(y = Prediction))+
+  facet_wrap(~Simulation) +
+  scale_y_log10() + 
+  labs(x = "Time (min)", y = "concentration (ug/ml)", title = "concentration of iHg in blood *ug/ml)")
+```
+
+# (4) concentratio of iHg in kidney (ug/ml)
+```{r}
+chk_1 %>% filter(Output_Var == "CKU") %>%
+ggplot(aes(x = Time, y = Data)) +
+  geom_point() + 
+  geom_line(aes(y = Prediction))+
+  facet_wrap(~Simulation) +
+  scale_y_log10() +  ylim(1, 300) +
+  labs(x = "Time (min)", y = "concentration (ug/ml)", title = "concentration of iHg in kidney *ug/ml)")
+```
+
+# (5) concentratio of iHg in liver (ug/ml)
+```{r}
+chk_1 %>% filter(Output_Var == "CLU") %>%
+ggplot(aes(x = Time, y = Data)) +
+  geom_point() + 
+  geom_line(aes(y = Prediction))+
+  facet_wrap(~Simulation) +
+  scale_y_log10() + 
+  labs(x = "Time (min)", y = "concentration (ug/ml)", title = "concentration of iHg in liver *ug/ml)")
+```
+
+# (6) concentratio of iHg in brain (ug/ml)
+```{r}
+chk_1 %>% filter(Output_Var == "CBrnU") %>%
+ggplot(aes(x = Time, y = Data)) +
+  geom_point() + 
+  geom_line(aes(y = Prediction))+
+  facet_wrap(~Simulation) +
+  scale_y_log10() + 
+  labs(x = "Time (min)", y = "concentration (ug/ml)", title = "concentration of iHg in brain *ug/ml)")
+```
+
+#### 2.5 Multi chains testing ### 
+#### MCMC Modeling ###
+### Using Ubuntu instead ###
+
+```{r, eval=F}
+Ratjob1 <- fread("outputs/iHgRat_4880.out") |> as.data.frame()
+Ratjob2 <- fread("outputs/iHgRat_3365.out") |> as.data.frame()
+Ratjob3 <- fread("outputs/iHgRat_5916.out") |> as.data.frame()
+Ratjob4 <- fread("outputs/iHgRat_6734.out") |> as.data.frame()
+x <- mcmc_array(data = list(Ratjob1, Ratjob2, Ratjob3, Ratjob4))
+str <- ceiling(nrow(x)/2) + 1
+end <- nrow(x)
+j <- c(str:end) # discard burn-in
+```
+
+# Size of output summary
+```{r}
+dim(x)
+# X [iteration, chain, parameter]
+```
+# traceplot and density diagnosis
+```{r}
+colnames(x[,1,])
+pars_Error <- c("Ve_Aurine(1)",	"Ve_Afeces(1)",	"Ve_CBldU(1)",	"Ve_CKU(1)",	"Ve_CLU(1)",	"Ve_CBrnU(1)")
+            
+pars_Pop <- c("M_lnPLC(1)", "M_lnPKC(1)", "M_lnPBrnC(1)",	"M_lnPRestC(1)",	"M_lnKabsC(1)",	"M_lnKunabsC(1)",	
+              "M_lnKbileC(1)",	"M_lnKurineC(1)",	"M_lnKbrnC(1)")
+
+pars_Study <- c("lnPLC(1.1)", "lnPKC(1.1)", "lnPBrnC(1.1)",	"lnPRestC(1.1)",	"lnKabsC(1.1)",	"lnKunabsC(1.1)",	"lnKbileC(1.1)",	"lnKurineC(1.1)",	"lnKbrnC(1.1)", "lnPLC(1.2)", "lnPKC(1.2)", "lnPBrnC(1.2)",	"lnPRestC(1.2)",	"lnKabsC(1.2)",	"lnKunabsC(1.2)",	"lnKbileC(1.2)",	"lnKurineC(1.2)",	"lnKbrnC(1.2)", "lnPLC(1.3)", "lnPKC(1.3)", "lnPBrnC(1.3)",	"lnPRestC(1.3)",	"lnKabsC(1.3)",	"lnKunabsC(1.3)",	"lnKbileC(1.3)",	"lnKurineC(1.3)",	"lnKbrnC(1.3)")
+
+pars_Dist <- c("LnPrior",	"LnPosterior",	"LnData")
+
+mcmc_dens_overlay(x[j,,],  pars = pars_Error)
+mcmc_dens_overlay(x[j,,],  pars = pars_Pop)
+mcmc_dens_overlay(x[j,,],  pars = pars_Study)
+mcmc_dens_overlay(x[j,,],  pars = pars_Dist)
+
+mcmc_trace(x[j,,], pars = pars_Error)
+mcmc_trace(x[j,,], pars = pars_Pop)
+mcmc_trace(x[j,,], pars = pars_Study)
+mcmc_trace(x[j,,], pars = pars_Dist)
+```
+
+# Andrew Gelman Scale Reduction Factor
+```{r}
+monitor(x[j, , pars_Pop])
+```
+
+# MPSRF
+```{r}
+pars_X <- x[j, , pars_Pop[5]] |> as.data.frame() |> lapply(mcmc) |> as.mcmc.list()
+gelman.diag(pars_X)
+```
+
+# Andrew Gelman Scale Reduction Factor
+```{r}
+ratmonitor <-monitor(x, digits=4, probs = c(0.025, 0.5, 0.975), warmup = floor(dim(x)[1]/2))
+print(ratmonitor)
+install.packages("writexl")
+library(writexl)
+write_xlsx(x = ratmonitor, path = "C:/Users/ysl02/mcsim-6.2.0/IRIS_iHg/modeling/RatHier/ratIHg.xlsx", col_names = TRUE)
+```
+
+# Save final population parameters 
+```{r}
+save_directory <- "outputs"
+file_name <- paste("MCMCfinal_", format(Sys.time(), "%Y-%m-%d"), ".RData", sep = "")
+pars_name <- dimnames(x)[[3]]
+str <- which(pars_name == "M_lnPLC(1)")
+end <- which(pars_name == "V_lnKbrnC(1)")
+pars <- pars_name[str:end]
+mcmc_out <- x[j, , pars]
+l <- dim(mcmc_out)[1] * dim(mcmc_out)[2]
+dim(mcmc_out) <- c(l, length(pars))
+colnames(mcmc_out) <- pars
+save(mcmc_out, file = file.path(save_directory, file_name))
+```
+
+# Software package
+# Check the software package version that will be used in this 
+# example.
+```{r, eval=T}
+devtools::session_info()
+```
+
+```{r, include=FALSE}
+clear()
+```

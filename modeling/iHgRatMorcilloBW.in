@@ -1,0 +1,70 @@
+Integrate (Lsodes, 1e-9, 1e-11 , 1);
+
+Simulation { #single drinking of 5 um
+  
+  BW0 = 0.13;
+  BWgrowth=1;
+  sex=1;
+  Growthrate = 0.000119895;
+  TChng 	= 0.05;
+  
+  # oral and IV administration
+  PDose = PerDose(0.0, 24,  0, 0.05);
+  IVDose = PerDose(0, 24,  0, 0.003);
+  Drink = 100.0;
+  
+  expowk = 1;
+  expodur = 1;
+ 
+  PrintStep (BalanceCheck, KDrink, CBldU, Aurine, Afeces, 0, 1344, 1);
+  
+  #
+ } 
+  
+Simulation { #single drinking of 50 um
+  
+  BW0 = 0.13;
+  BWgrowth=1;
+  sex=1;
+  Growthrate = 0.0001218286;
+  TChng 	= 0.05;
+  
+  # oral and IV administration
+  PDose = PerDose(0.0, 24,  0, 0.05);
+  IVDose = PerDose(0, 24,  0, 0.003);
+  Drink = 1000.0 ; # Drinking water dose (ug/kg/day) 
+  
+  expowk = 1;
+  expodur = 1;
+
+  PrintStep (BalanceCheck, KDrink, CBldU, Aurine, Afeces, 0, 1344, 1);
+  
+  #
+} 
+
+Simulation { #single drinking of 500 um
+  
+  BW0 = 0.13;
+  BWgrowth=1;
+  sex=1;
+  Growthrate = 0.0000992677;
+  TChng 	= 0.05;
+  
+  # oral and IV administration
+  PDose = PerDose(0.0, 24,  0, 0.05);
+  IVDose = PerDose(0, 24,  0, 0.003);
+  Drink = 7270.0 ;  
+  
+  expowk = 1;
+  expodur = 1;
+
+  
+  PrintStep (BalanceCheck, KDrink, CBldU, Aurine, Afeces, 0, 1344, 1);
+  #
+} 
+
+
+END.
+
+
+

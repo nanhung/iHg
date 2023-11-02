@@ -1,0 +1,65 @@
+Integrate (Lsodes, 1e-9, 1e-11 , 1);
+
+Simulation { #oral of 3000 ug Hg/kg/d for 7 weeks
+  
+  BW0 = 0.030;
+  BWgrowth=0;
+  Growthrate = 0.0;
+  sex=1;
+  TChng 	= 0.05;
+  
+  PDose = PerDose(3000.0, 24,  0, 0.05);
+  IVDose = PerDose(0.0, 24,  0, 0.003);
+  Drink = 0;
+  
+  expowk = PerDose(1.0, 168,  0, 120);
+  expodur = PerDose(1.0, 1176, 0, 1176);
+  
+  PrintStep (BalanceCheck,  KGavage, CKU, CBldU, CVKU, 0, 1176, 1);
+  # PrintStep( Liver, 0, 50, 0.25);
+  
+ } 
+  
+Simulation { #oral of 15000 ug Hg/kg/d for 7 weeks
+  
+  BW0 = 0.029;
+  BWgrowth=0;
+  Growthrate = 0.0;
+  sex=1;
+  TChng 	= 0.05;
+  
+  PDose = PerDose(15000.0, 24,  0, 0.05);
+  IVDose = PerDose(0.0, 24,  0, 0.003);
+  Drink = 0;
+  
+  expowk = PerDose(1.0, 168,  0, 120);
+  expodur = PerDose(1.0, 1176, 0, 1176);
+  
+  PrintStep (BalanceCheck,  KGavage, CKU, CBldU, 0, 1176, 1);
+  # PrintStep( Liver, 0, 50, 0.25);
+  
+} 
+
+Simulation { #oral of 75000 ug Hg/kg/d for 7 weeks
+  
+  BW0 = 0.025;
+  BWgrowth=0;
+  Growthrate = 0.0;
+  sex=1;
+  TChng 	= 0.05;
+  
+  PDose = PerDose(75000.0, 24,  0, 0.05);
+  IVDose = PerDose(0.0, 24,  0, 0.003);
+  Drink = 0;
+  
+  expowk = PerDose(1.0, 168,  0, 120);
+  expodur = PerDose(1.0, 1176, 0, 1176);
+  
+  PrintStep (BalanceCheck,  KGavage, CKU, CBldU, 0, 1176, 1);
+  # PrintStep( Liver, 0, 50, 0.25);
+  
+} 
+END.
+
+
+

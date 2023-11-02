@@ -1,0 +1,26 @@
+Integrate (Lsodes, 1e-9, 1e-11 , 1);
+
+Simulation { # C57BL/6J mice, male, 10000 ug HgCl2 (or 7390 ug Hg)/kg
+  
+  BW0 = 0.019;
+  BWgrowth=0;
+  sex=1;
+  Growthrate = 0;
+  TChng 	= 0.05;
+  
+  # oral and IV administration
+  PDose = PerDose(7390, 24,  0, 0.05);
+  IVDose = PerDose(0.0, 24,  0, 0.003);
+  Drink = 0;
+  
+  expowk = PerDose(1.0, 168,  0, 168);
+  expodur =  PerDose(1.0, 240, 0, 240);
+  
+  PrintStep (BalanceCheck, CLU, CKU, CBrnU, CBldU, 0, 240, 1);
+} 
+
+
+END.
+
+
+

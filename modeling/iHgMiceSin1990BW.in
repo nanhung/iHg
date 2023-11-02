@@ -1,0 +1,25 @@
+Integrate (Lsodes, 1e-9, 1e-11 , 1);
+
+Simulation { # female Swiss Albino mice, oral of 6000 ug Hg/kg/d for 10 days
+  
+  BW0 = 0.0225;
+  BWgrowth=0;
+  sex=2;
+  Growthrate = 0;
+  TChng 	= 0.05;
+  
+  # oral and IV administration
+  PDose = PerDose(6000, 24,  0, 0.05);
+  IVDose = PerDose(0.0, 24,  0, 0.003);
+  Drink = 0;
+  
+  expowk = PerDose(1.0, 168,  0, 168);
+  expodur =  PerDose(1.0, 240, 0, 240);
+  
+  PrintStep (BW, BalanceCheck,  CKU, CLU, CBrnU, 0, 300, 1);
+}
+  
+END.
+
+
+

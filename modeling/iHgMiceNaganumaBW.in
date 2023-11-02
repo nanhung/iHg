@@ -1,0 +1,27 @@
+Integrate (Lsodes, 1e-9, 1e-11 , 1);
+
+Simulation { #single IV dose of 5000 ug Hg/kg/d
+  
+  BW0 = 0.02;
+  BWgrowth=0;
+  Growthrate = 0.0;
+  sex=1;
+  TChng 	= 0.003;
+  
+  # oral and IV administration
+  PDose = PerDose(0.0, 24,  0, 0.05);
+  IVDose = PerDose(5000.0, 24,  0, 0.003);
+
+  expowk = PerDose(1.0, 168,  0, 0.003);
+  expodur = PerDose(1.0, 1344, 0, 0.003);
+  Drink = 0.0 ;
+  
+  PrintStep (  BalanceCheck, KIV, CKU, CLU, CBldU, 0, 24, 0.1);
+  # PrintStep( Liver, 0, 50, 0.25);
+  
+ } 
+  
+END.
+
+
+
