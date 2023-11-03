@@ -36,8 +36,7 @@ Distrib (lnKbileC, TruncNormal_v, M_lnKbileC, V_lnKbileC,    -2.966, 3.025);
 Distrib (lnKurineC, TruncNormal_v, M_lnKurineC, V_lnKurineC, -5.521, 0.47);
 Distrib (lnKbrnC, TruncNormal_v, M_lnKbrnC, V_lnKbrnC,       -6.836, 0.073);
 
-
-Simulation { # Experiment 1, NTP 6-month male oral of 230 ug Hg/kg/d for 6 months
+Simulation { # 1, NTP 6-month male oral of 230 ug Hg/kg/d for 6 months
   
   BW0 = 0.146;
   BWgrowth=1;
@@ -53,10 +52,11 @@ Simulation { # Experiment 1, NTP 6-month male oral of 230 ug Hg/kg/d for 6 month
   expowk = PerDose(1.0, 168,  0, 120);
   expodur =  PerDose(1.0, 4320, 0, 4320);
   
-  Print (CKU, CLU, CBrnU, 1428, 2868,	4308);
+  Print (CLU, CKU, 1428, 2868, 4308);
+
 }
 
-Simulation { # Experiment 2, NTP 6-month male oral of 920 ug Hg/kg/d for 6 months
+Simulation { # 2, NTP 6-month male oral of 925 ug Hg/kg/d for 6 months
 
   BW0 = 0.146;
   BWgrowth=1;
@@ -65,17 +65,17 @@ Simulation { # Experiment 2, NTP 6-month male oral of 920 ug Hg/kg/d for 6 month
   TChng 	= 0.05;
 
   # oral and IV administration
-  PDose = PerDose(920, 24,  0, 0.05);
+  PDose = PerDose(925, 24,  0, 0.05);
   IVDose = PerDose(0.0, 24,  0, 0.003);
 
   expowk = PerDose(1.0, 168,  0, 120);
   expodur =  PerDose(1.0, 4320, 0, 4320);
 
-  Print (CKU, CLU, CBrnU, 1428, 2868,	4308);
+  Print (CLU, CKU, 1428, 2868, 4308);
 }
   
 
-Simulation { # Experiment 3, NRP 6-month male oral of 3690 ug Hg/kg/d for 6 months
+Simulation { # 3, NRP 6-month male oral of 3695 ug Hg/kg/d for 6 months
   
   BW0 = 0.146;
   BWgrowth=1;
@@ -84,16 +84,17 @@ Simulation { # Experiment 3, NRP 6-month male oral of 3690 ug Hg/kg/d for 6 mont
   TChng 	= 0.05;
   
  # oral and IV administration
-  PDose = PerDose(3690, 24,  0, 0.05);
+  PDose = PerDose(3695, 24,  0, 0.05);
   IVDose = PerDose(0.0, 24,  0, 0.003);
   expowk = PerDose(1.0, 168,  0, 120);
   expodur =  PerDose(1.0, 4320, 0, 4320);
   
-  Print (CKU, CLU, CBrnU, 1428, 2868,	4308);
+  Print (CLU, CKU, 1428, 2868, 4308);
+  Print (CBrnU, 1428,	4308);
  }
 
 
-Simulation { # Experiment 4, male rat oral of 14780 ug Hg/kg/d for 2 weeks - 12 days  <========= from 20 mg HgCl2/kg/d
+Simulation { # 4, MALE rat oral of 14775 ug Hg/kg/d for 2 weeks - 12 days
   
   BW0 = 0.133;
   BWgrowth=1;
@@ -101,18 +102,18 @@ Simulation { # Experiment 4, male rat oral of 14780 ug Hg/kg/d for 2 weeks - 12 
   Growthrate = 0.000134549;
   TChng 	= 0.05;
   
-  PDose = PerDose(14780.0, 24,  0, 0.05);
+  PDose = PerDose(14775.0, 24,  0, 0.05);
   IVDose = PerDose(0.0, 24,  0, 0.003);
   Drink = 0;
   
   expowk = PerDose(1.0, 168,  0, 120);
   expodur = PerDose(1.0, 450, 0, 384);
   
-  Print (CKU, CBrnU, CLU, 384);
+  Print (CLU, CKU, CBrnU, 384);
 
 } 
 
-Simulation { # Experiment 5, female rat oral of 14780 ug Hg/kg/d for 2 weeks - 12 day
+Simulation { # Experiment 5, FEMALE rat oral of 14775 ug Hg/kg/d for 2 weeks - 12 day
   
   BW0 = 0.106;
   BWgrowth=1;
@@ -120,18 +121,18 @@ Simulation { # Experiment 5, female rat oral of 14780 ug Hg/kg/d for 2 weeks - 1
   Growthrate = 0.000074653;
   TChng 	= 0.05;
   
-  PDose = PerDose(14780.0, 24,  0, 0.05);
+  PDose = PerDose(14775.0, 24,  0, 0.05);
   IVDose = PerDose(0.0, 24,  0, 0.003);
   Drink = 0;
   
   expowk = PerDose(1.0, 168,  0, 120);
   expodur = PerDose(1.0, 450, 0, 384);
 
-  Print (CKU, CBrnU, CLU, 384);
+  Print (CLU, CKU, CBrnU, 384);
 
 } 
 
-Simulation { # Experiment 6, male oral of 15000 ug Hg/kg/d for 60 days
+Simulation { # 6, Shi, MALE oral of 15000 ug Hg/kg/d for 60 days
   
   BW0 = 0.18;
   BWgrowth=1;
@@ -150,7 +151,7 @@ Simulation { # Experiment 6, male oral of 15000 ug Hg/kg/d for 60 days
   Print (CKU, 1450);
 }
 
-Simulation { #Experiment 7, single drinking of 0.5 mg/kg/day
+Simulation { # 7, Zhang, single drinking of 0.5 mg/kg/day
   
   BW0 = 0.275;
   BWgrowth=1;
@@ -161,13 +162,13 @@ Simulation { #Experiment 7, single drinking of 0.5 mg/kg/day
   # oral and IV administration
   PDose = PerDose(0.0, 24,  0, 0.05);
   IVDose = PerDose(0, 24,  0, 0.003);
-  Drink = 34600.0 ;  
+  Drink = 25560.0 ;  
   
   expowk = 1;
   expodur = 1;
 
   
-  Print (CBldU, 168);
+  Print (CLU, CKU, 168);
   #
 } 
 

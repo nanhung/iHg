@@ -17,7 +17,7 @@ Simulation { #single drinking of 0.5 mg/kg/day
   expodur = 1;
 
   
-  PrintStep (BalanceCheck, KDrink, CBldU, 0, 168, 1);
+  PrintStep (BalanceCheck, KDrink, CLU, CKU, 0, 168, 1);
   #
 } 
 
