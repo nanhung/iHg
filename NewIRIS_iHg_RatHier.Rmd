@@ -25,6 +25,7 @@ output:
 ```{r, include=FALSE}
 #source("MCSim/function.R")
 source("function.R")
+getwd()
 ```
 
 # Import the R packages
@@ -810,17 +811,15 @@ gelman.diag(pars_X)
 
 # Andrew Gelman Scale Reduction Factor
 ```{r}
-ratmonitor <-monitor(x, digits=4, probs = c(0.025, 0.5, 0.975), warmup = floor(dim(x)[1]/2))
-print(ratmonitor)
-install.packages("writexl")
-library(writexl)
-write_xlsx(x = ratmonitor, path = "C:/Users/ysl02/mcsim-6.2.0/IRIS_iHg/modeling/RatHier/ratIHg.xlsx", col_names = TRUE)
+#ratmonitor <-monitor(x, digits=4, probs = c(0.025, 0.5, 0.975), warmup = floor(dim(x)[1]/2))
+#print(ratmonitor)
+#install.packages("writexl")
+#library(writexl)
+#write_xlsx(x = ratmonitor, path = "C:/Users/ysl02/mcsim-6.2.0/IRIS_iHg/modeling/RatHier/ratIHg.xlsx", col_names = TRUE)
 ```
 
-# Save final population parameters 
+# Validation
 ```{r}
-save_directory <- "outputs"
-file_name <- paste("MCMCfinal_", format(Sys.time(), "%Y-%m-%d"), ".RData", sep = "")
 pars_name <- dimnames(x)[[3]]
 str <- which(pars_name == "M_lnPLC(1)")
 end <- which(pars_name == "V_lnKbrnC(1)")
@@ -829,8 +828,21 @@ mcmc_out <- x[j, , pars]
 l <- dim(mcmc_out)[1] * dim(mcmc_out)[2]
 dim(mcmc_out) <- c(l, length(pars))
 colnames(mcmc_out) <- pars
-save(mcmc_out, file = file.path(save_directory, file_name))
+i <- sample(dim(mcmc_out)[1], 1000) # random select 1000 draws
+tmp.x <- mcmc_out[i, pars] 
+tmp.x |> write.table(file="poppred.dat", row.names=T, sep="\t")
+model <- "iHgRatBW.model"
+input <- "iHgRat_MCMC_setpts.in" 
+mcsim(model = model, input = input, dir = "modeling")
 ```
+
+```{r}
+pred_pop <- fread("poppred.out") |> as.data.frame()
+dim(pred_pop)
+```
+
+
+
 
 # Software package
 # Check the software package version that will be used in this 

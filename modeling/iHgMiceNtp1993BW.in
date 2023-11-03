@@ -1,6 +1,6 @@
 Integrate (Lsodes, 1e-9, 1e-11 , 1);
 
-Simulation { # male oral of 1250 ug Hg/kg/d for 6 months
+Simulation { # male oral of 1250 ug HgCl2/kg/d for 6 months ===> 925 ug Hg/kg/d
   
   BW0 = 0.0217;
   BWgrowth= 1;
@@ -9,7 +9,7 @@ Simulation { # male oral of 1250 ug Hg/kg/d for 6 months
   TChng 	= 0.05;
 
   # oral and IV administration
-  PDose = PerDose(1250, 24,  0, 0.05);
+  PDose = PerDose(925, 24,  0, 0.05);
   IVDose = PerDose(0.0, 24,  0, 0.003);
   Drink = 0.0 ;
   
@@ -19,7 +19,7 @@ Simulation { # male oral of 1250 ug Hg/kg/d for 6 months
   PrintStep (BW, BalanceCheck,  KGavage, CKU,  CLU, CBrnU, 0, 4320, 1);
 }
   
-  Simulation { # male oral of 5000 ug Hg/kg/d for 6 months
+  Simulation { # male oral of 5000 ug HgCl2/kg/d for 6 months  ====> 3695 ug Hg/kg/d
     
     BW0 = 0.0217;
     BWgrowth= 1;
@@ -28,7 +28,7 @@ Simulation { # male oral of 1250 ug Hg/kg/d for 6 months
     TChng 	= 0.05;
     
     # oral and IV administration
-    PDose = PerDose(5000, 24,  0, 0.05);
+    PDose = PerDose(3695 , 24,  0, 0.05);
     IVDose = PerDose(0.0, 24,  0, 0.003);
     Drink = 0;
     
@@ -39,7 +39,7 @@ Simulation { # male oral of 1250 ug Hg/kg/d for 6 months
   }
   
     
-    Simulation { # male oral of 20000 ug Hg/kg/d for 6 months
+    Simulation { # male oral of 20000 ug HgCl2/kg/d for 6 months====> 14775  ug Hg/kg/d
       
       BW0 = 0.0217;
       BWgrowth= 1;
@@ -48,7 +48,7 @@ Simulation { # male oral of 1250 ug Hg/kg/d for 6 months
       TChng 	= 0.05;
       
       # oral and IV administration
-      PDose = PerDose(20000, 24,  0, 0.05);
+      PDose = PerDose(14775, 24,  0, 0.05);
       IVDose = PerDose(0.0, 24,  0, 0.003);
       Drink = 0;
       
@@ -58,7 +58,7 @@ Simulation { # male oral of 1250 ug Hg/kg/d for 6 months
       PrintStep (BW, BalanceCheck,  KGavage, CKU,  CLU, CBrnU, 0, 4320, 1);
  }
 
-    Simulation { # female oral of 1250 ug Hg/kg/d for 6 months
+    Simulation { # female oral of 1250 ug HgCl2/kg/d for 6 months ====> 925 ug Hg/kg/d
       
       BW0 = 0.018;
       BWgrowth= 1;
@@ -67,7 +67,7 @@ Simulation { # male oral of 1250 ug Hg/kg/d for 6 months
       TChng 	= 0.05;
       
       # oral and IV administration
-      PDose = PerDose(1250, 24,  0, 0.05);
+      PDose = PerDose(925, 24,  0, 0.05);
       IVDose = PerDose(0.0, 24,  0, 0.003);
       Drink = 0;
       
@@ -77,7 +77,7 @@ Simulation { # male oral of 1250 ug Hg/kg/d for 6 months
       PrintStep (BW, BalanceCheck,  KGavage, CKU,  CLU, CBrnU, 0, 4320, 1);
     }
     
-    Simulation { # female oral of 5000 ug Hg/kg/d for 6 months
+    Simulation { # female oral of 5000  ug HgCl2/kg/d for 6 months  ====> 3695 ug Hg/kg/d
       
       BW0 = 0.018;
       BWgrowth= 1;
@@ -86,7 +86,7 @@ Simulation { # male oral of 1250 ug Hg/kg/d for 6 months
       TChng 	= 0.05;
       
       # oral and IV administration
-      PDose = PerDose(5000, 24,  0, 0.05);
+      PDose = PerDose(3695 , 24,  0, 0.05);
       IVDose = PerDose(0.0, 24,  0, 0.003);
       Drink = 0;
       
@@ -97,7 +97,7 @@ Simulation { # male oral of 1250 ug Hg/kg/d for 6 months
     }
     
     
-    Simulation { # female oral of 20000 ug Hg/kg/d for 6 months
+    Simulation { # female oral of 20000 ug HgCl2/kg/d for 6 months ====> 14775  ug Hg/kg/d
       
       BW0 = 0.018;
       BWgrowth= 1;
@@ -106,7 +106,7 @@ Simulation { # male oral of 1250 ug Hg/kg/d for 6 months
       TChng 	= 0.05;
       
       # oral and IV administration
-      PDose = PerDose(20000, 24,  0, 0.05);
+      PDose = PerDose(14775, 24,  0, 0.05);
       IVDose = PerDose(0.0, 24,  0, 0.003);
       Drink = 0;
       

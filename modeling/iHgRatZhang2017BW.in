@@ -8,10 +8,10 @@ Simulation { #single drinking of 0.5 mg/kg/day
   Growthrate = -0.00026785714;
   TChng 	= 0.05;
   
-  # oral and IV administration
+  # oral and IV administration , 34.6 mg/kg = 34600 ug/kg HgCl2 ===> 25560 ug/kg
   PDose = PerDose(0.0, 24,  0, 0.05);
   IVDose = PerDose(0, 24,  0, 0.003);
-  Drink = 34600.0 ;  
+  Drink =  25560.0 ;  
   
   expowk = 1;
   expodur = 1;

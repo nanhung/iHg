@@ -19,7 +19,7 @@ Simulation { # male oral of 230 ug Hg/kg/d for 6 months
   PrintStep (BW, BalanceCheck,  CKU, CLU, CBrnU, 0, 4320, 1);
 }
   
-Simulation { # male oral of 920 ug Hg/kg/d for 6 months
+Simulation { # male oral of 925 ug Hg/kg/d for 6 months
 
   BW0 = 0.146;
   BWgrowth=1;
@@ -28,7 +28,7 @@ Simulation { # male oral of 920 ug Hg/kg/d for 6 months
   TChng 	= 0.05;
 
   # oral and IV administration
-  PDose = PerDose(920, 24,  0, 0.05);
+  PDose = PerDose(925, 24,  0, 0.05);
   IVDose = PerDose(0.0, 24,  0, 0.003);
 
   expowk = PerDose(1.0, 168,  0, 120);
@@ -72,7 +72,7 @@ Simulation { # female oral of 230 ug Hg/kg/d for 6 months
   PrintStep (BW, BalanceCheck,  CKU, CLU, CBrnU, 0, 4320, 1);
 }
 
-Simulation { # female oral of 920 ug Hg/kg/d for 6 months
+Simulation { # female oral of 925 ug Hg/kg/d for 6 months
   
   BW0 = 0.123;
   BWgrowth=1;
@@ -81,7 +81,7 @@ Simulation { # female oral of 920 ug Hg/kg/d for 6 months
   TChng 	= 0.05;
   
   # oral and IV administration
-  PDose = PerDose(920, 24,  0, 0.05);
+  PDose = PerDose(925, 24,  0, 0.05);
   IVDose = PerDose(0.0, 24,  0, 0.003);
   expowk = PerDose(1.0, 168,  0, 120);
   expodur =  PerDose(1.0, 4320, 0, 4320);

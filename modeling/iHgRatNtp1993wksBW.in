@@ -1,6 +1,6 @@
 Integrate (Lsodes, 1e-9, 1e-11 , 1);
 
-Simulation { # male rat oral of 14780 ug Hg/kg/d for 2 weeks - 12 days  <========= from 20 mg HgCl2/kg/d
+Simulation { # male rat oral of 14775 ug Hg/kg/d for 2 weeks - 12 days  <========= from 20 mg HgCl2/kg/d
   
   BW0 = 0.133;
   BWgrowth=1;
@@ -8,7 +8,7 @@ Simulation { # male rat oral of 14780 ug Hg/kg/d for 2 weeks - 12 days  <=======
   Growthrate = 0.000134549;
   TChng 	= 0.05;
   
-  PDose = PerDose(14780.0, 24,  0, 0.05);
+  PDose = PerDose(14775.0, 24,  0, 0.05);
   IVDose = PerDose(0.0, 24,  0, 0.003);
   Drink = 0;
   
@@ -19,7 +19,7 @@ Simulation { # male rat oral of 14780 ug Hg/kg/d for 2 weeks - 12 days  <=======
 
 } 
 
-Simulation { # female rat oral of 14780 ug Hg/kg/d for 2 weeks - 12 day
+Simulation { # female rat oral of 14775 ug Hg/kg/d for 2 weeks - 12 day
   
   BW0 = 0.106;
   BWgrowth=1;
@@ -27,7 +27,7 @@ Simulation { # female rat oral of 14780 ug Hg/kg/d for 2 weeks - 12 day
   Growthrate = 0.000074653;
   TChng 	= 0.05;
   
-  PDose = PerDose(14780.0, 24,  0, 0.05);
+  PDose = PerDose(14775.0, 24,  0, 0.05);
   IVDose = PerDose(0.0, 24,  0, 0.003);
   Drink = 0;
   
