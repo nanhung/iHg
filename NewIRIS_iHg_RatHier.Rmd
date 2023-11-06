@@ -267,96 +267,104 @@ legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 
 
 
-##### 4. Male and Female F344 rats with oral gavage of 230 to 3690 µg Hg/kg/d for 6 months (Ntp 1993):   
+##### 4. Male and Female F344 rats with oral gavage of 230 to 3695 µg Hg/kg/d for 6 months (Ntp 1993):   
 ```{r}
 Ntp1993Rat <- mcsim(model = model, input = "iHgRatNtp1993BW.in", dir = "modeling")
 Ntp1993RatMale230  <- readsims(Ntp1993Rat, exp=1)
 Ntp1993RatMale920  <- readsims(Ntp1993Rat, exp=2)
-Ntp1993RatMale3690<- readsims(Ntp1993Rat, exp=3)
+Ntp1993RatMale3695 <- readsims(Ntp1993Rat, exp=3)
 Ntp1993RatFemale230  <- readsims(Ntp1993Rat, exp=4)
 Ntp1993RatFemale920  <- readsims(Ntp1993Rat, exp=5)
-Ntp1993RatFemale3690<- readsims(Ntp1993Rat, exp=6)
+Ntp1993RatFemale3695 <- readsims(Ntp1993Rat, exp=6)
 ```
 
 ##### 4. Male F344 rats with oral gavage of 230 µg Hg/kg/d for 6 months (Ntp 1993): liver --- NTP --- QA or background contamination issue 
 ```{r}
-data_t_Ntp1993RatMale230_liver <- c(1428, 2868, 4308);
+data_t_Ntp1993 <- c(1428, 2868, 4308);
 data_c_Ntp1993RatMale230_liver <- c(0.31, 0.11, 0.11);
 
-plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 230, Male rat", xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 4320), ylim = c(0.01, 20), log='y')
+plot(data_t_Ntp1993, data_c_Ntp1993RatMale230_liver, 
+     main = "Ntp 1993, 6 month, Oral = 230, Male rat", 
+     xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 4320), ylim = c(0.01, 20), log='y')
 lines(Ntp1993RatMale230$Time, Ntp1993RatMale230$CLU)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```
 
 ##### 4. Male F344 rats with oral gavage of 230 µg Hg/kg/d for 6 months (Ntp 1993): kidney 
-```{r}
-data_t_Ntp1993RatMale230_kidney <- c(1428, 2868,	4308);
+```{r, warning=FALSE}
 data_c_Ntp1993RatMale230_kidney <- c(22.95, 33.67,47.8);
 sd <- c(1.2,	4.67,	14.7)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
 
-plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 230, Male rat", xlab = "Time (hr)", ylab = "CK (ug/g)", xlim = c(0, 4320), ylim = c(1, 100), log='y')
-arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+plot(data_t_Ntp1993, data_c_Ntp1993RatMale230_kidney,
+     main = "Ntp 1993, 6 month, Oral = 230, Male rat", xlab = "Time (hr)", ylab = "CK (ug/g)",
+     xlim = c(0, 4320), ylim = c(1, 100), log='y')
+arrows(data_t_Ntp1993, sd.dn, data_t_Ntp1993, sd.up, code=3, length=0.02, angle=90)
 lines(Ntp1993RatMale230$Time, Ntp1993RatMale230$CKU)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```
 
 ##### 4. Male F344 rats with oral gavage of 925 µg Hg/kg/d for 6 months (Ntp 1993): liver 
 ```{r}
-data_t_Ntp1993RatMale925_liver <- c(1428, 2868,	4308);
 data_c_Ntp1993RatMale925_liver <- c(0.17, 0.29,	0.41);
 
-plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 925, Male rat", xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 4320), ylim = c(0.01, 20), log='y')
+plot(data_t_Ntp1993, data_c_Ntp1993RatMale925_liver,
+     main = "Ntp 1993, 6 month, Oral = 925, Male rat", xlab = "Time (hr)", 
+     ylab = "CL (ug/g)", xlim = c(0, 4320), ylim = c(0.01, 20), log='y')
 lines(Ntp1993RatMale920$Time, Ntp1993RatMale920$CLU)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```
 
 ##### 4. Male F344 rats with oral gavage of 925 µg Hg/kg/d for 6 months (Ntp 1993): kidney 
 ```{r}
-data_t_Ntp1993RatMale925_kidney <- c(1428, 2868,	4308);
 data_c_Ntp1993RatMale925_kidney <- c(60.05, 64.77, 89.5);
 
-plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 925, Male rat", xlab = "Time (hr)", ylab = "CK (ug/g)", xlim = c(0, 4320), ylim = c(1,500), log='y')
+plot(data_t_Ntp1993, data_c_Ntp1993RatMale925_kidney, 
+     main = "Ntp 1993, 6 month, Oral = 925, Male rat", 
+     xlab = "Time (hr)", ylab = "CK (ug/g)", xlim = c(0, 4320), ylim = c(1,500), log='y')
 lines(Ntp1993RatMale920$Time, Ntp1993RatMale920$CKU)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```
 
 ##### 4. Male F344 rats with oral gavage of 3695 µg Hg/kg/d for 6 months (Ntp 1993): liver 
 ```{r}
-data_t_Ntp1993RatMale3695_liver <- c(1428, 2868,	4308);
 data_c_Ntp1993RatMale3695_liver <- c(0.84, 1.66, 1.7);
 
-plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 3695, Male rat", xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 4320), ylim = c(0.1, 100), log='y')
-lines(Ntp1993RatMale3690$Time, Ntp1993RatMale3690$CLU)
+plot(data_t_Ntp1993, data_c_Ntp1993RatMale3695_liver, 
+     main = "Ntp 1993, 6 month, Oral = 3695, Male rat",
+     xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 4320), ylim = c(0.1, 100), log='y')
+lines(Ntp1993RatMale3695$Time, Ntp1993RatMale3695$CLU)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```
 
 ##### 4. Male F344 rats with oral gavage of 3695 µg Hg/kg/d for 6 months (Ntp 1993): kidney 
-```{r}
-data_t_Ntp1993RatMale3695_kidney <- c(1428, 2868,	4308);
+```{r, warning=FALSE}
 data_c_Ntp1993RatMale3695_kidney <- c(93.55, 85.97, 92.1);
 sd <- c(39.5, 8.75, 4.57)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
 
-plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 3695, Male rat", xlab = "Time (hr)", ylab = "CK (ug/g)", xlim = c(0, 4320), ylim = c(1, 2000), log='y')
-lines(Ntp1993RatMale3690$Time, Ntp1993RatMale3690$CKU)
+plot(data_t_Ntp1993, data_c_Ntp1993RatMale3695_kidney,
+     main = "Ntp 1993, 6 month, Oral = 3695, Male rat", xlab = "Time (hr)", 
+     ylab = "CK (ug/g)", xlim = c(0, 4320), ylim = c(1, 2000), log='y')
+lines(Ntp1993RatMale3695$Time, Ntp1993RatMale3695$CKU)
 arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```
 
 ##### 4. Male F344 rats with oral gavage of 3695 µg Hg/kg/d for 6 months (Ntp 1993): brain 
-```{r}
-data_t_Ntp1993RatMale3695_brain <- c(1428,  4308);
-data_c_Ntp1993RatMale3695_brain<- c(0.05,	 0.01);
-sd <- c(0.02, 0.01)
+```{r warning=FALSE}
+data_c_Ntp1993RatMale3695_brain<- c(0.05,	NA, 0.01);
+sd <- c(0.02, NA, 0.01)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
 
-plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 3695, Male rat", xlab = "Time (hr)", ylab = "CBrn (ug/g)", xlim = c(0, 4320), ylim = c(0.001, 10), log='y')
+plot(data_t_Ntp1993, data_c_Ntp1993RatMale3695_brain,
+     main = "Ntp 1993, 6 month, Oral = 3695, Male rat", xlab = "Time (hr)", 
+     ylab = "CBrn (ug/g)", xlim = c(0, 4320), ylim = c(0.001, 10), log='y')
 arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
-lines(Ntp1993RatMale3690$Time, Ntp1993RatMale3690$CBrnU)
+lines(Ntp1993RatMale3695$Time, Ntp1993RatMale3695$CBrnU)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```
 
@@ -412,7 +420,7 @@ arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```
 
-##### 4. Female F344 rats with oral gavage of 3690 µg Hg/kg/d for 6 months (Ntp 1993): liver 
+##### 4. Female F344 rats with oral gavage of 3695 µg Hg/kg/d for 6 months (Ntp 1993): liver 
 ```{r}
 data_t <- c(1428, 2868,	4308);
 data_c <- c(1.00, 1.62, 1.86);
@@ -420,13 +428,13 @@ sd <- c(0.5, 0.27, 0.26)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
 
-plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 3690, Female rat", xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 4320), ylim = c(0.1, 100), log='y')
-lines(Ntp1993RatFemale3690$Time, Ntp1993RatFemale3690$CLU)
+plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 3695, Female rat", xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 4320), ylim = c(0.1, 100), log='y')
+lines(Ntp1993RatFemale3695$Time, Ntp1993RatFemale3695$CLU)
 arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```
 
-##### 4. Female F344 rats with oral gavage of 3690 µg Hg/kg/d for 6 months (Ntp 1993): kidney 
+##### 4. Female F344 rats with oral gavage of 3695 µg Hg/kg/d for 6 months (Ntp 1993): kidney 
 ```{r}
 data_t <- c(1428, 2868,	4308);
 data_c <- c(101.87, 122.19, 92.78);
@@ -434,13 +442,13 @@ sd <- c(24.5, 9.87, 7.29)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
 
-plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 3690, Female rat", xlab = "Time (hr)", ylab = "CK (ug/g)", xlim = c(0, 4320), ylim = c(1, 1000), log='y')
-lines(Ntp1993RatFemale3690$Time, Ntp1993RatFemale3690$CKU)
+plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 3695, Female rat", xlab = "Time (hr)", ylab = "CK (ug/g)", xlim = c(0, 4320), ylim = c(1, 1000), log='y')
+lines(Ntp1993RatFemale3695$Time, Ntp1993RatFemale3695$CKU)
 arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```
 
-##### 4. Female F344 rats with oral gavage of 3690  µg Hg/kg/d for 6 months (Ntp 1993): brain 
+##### 4. Female F344 rats with oral gavage of 3695  µg Hg/kg/d for 6 months (Ntp 1993): brain 
 ```{r}
 data_t <- c(1428,  4308);
 data_c <- c(0.06,  0.01);
@@ -448,9 +456,9 @@ sd <- c(0.04, 0.001)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
 
-plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 3690, Female rat", xlab = "Time (hr)", ylab = "CBrn (ug/g)", xlim = c(0, 4320), ylim = c(0.001, 10), log='y')
+plot(data_t, data_c, main = "Ntp 1993, 6 month, Oral = 3695, Female rat", xlab = "Time (hr)", ylab = "CBrn (ug/g)", xlim = c(0, 4320), ylim = c(0.001, 10), log='y')
 arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
-lines(Ntp1993RatFemale3690$Time, Ntp1993RatFemale3690$CBrn)
+lines(Ntp1993RatFemale3695$Time, Ntp1993RatFemale3695$CBrn)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```
 
@@ -463,85 +471,97 @@ Ntp1993Female14775 <- readsims(Ntp1993Ratwks, exp=2)
 
 ##### 5. Male F344 rats with oral gavage of 14775 µg Hg/kg/d for 16 days (Ntp 1993): liver 
 ```{r}
-data_t_Ntp1993Male14775_liver <- c(384);
+data_t <- c(384);
 data_c_Ntp1993Male14775_liver <- c(5.49);
 sd <- c(1.21)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
 
-plot(data_t, data_c, main = "Ntp 1993, 16 day, Oral = 14775, Male rat", xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 400), ylim = c(0.1, 100), log='y')
+plot(data_t, data_c_Ntp1993Male14775_liver,
+     main = "Ntp 1993, 16 day, Oral = 14775, Male rat", 
+     xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 400), ylim = c(0.1, 100), log='y')
 arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
-lines(Ntp1993Male14780$Time, Ntp1993Male14780$CLU)
+lines(Ntp1993Male14775$Time, Ntp1993Male14775$CLU)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```
 
 ##### 5. Male F344 rats with oral gavage of 14775 µg Hg/kg/d for 16 days (Ntp 1993): kidney 
 ```{r}
-data_t_Ntp1993Male14775_kidney <- c(384);
+data_t <- c(384);
 data_c_Ntp1993Male14775_kidney <- c(44.9);
 sd <- c(11.7)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
 
-plot(data_t, data_c, main = "Ntp 1993, 16 day, Oral = 14775, Male rat", xlab = "Time (hr)", ylab = "CK (ug/g)", xlim = c(0, 400), ylim = c(1, 2000), log='y')
+plot(data_t, data_c_Ntp1993Male14775_kidney,
+     main = "Ntp 1993, 16 day, Oral = 14775, Male rat", xlab = "Time (hr)", 
+     ylab = "CK (ug/g)", xlim = c(0, 400), ylim = c(1, 2000), log='y')
 arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
-lines(Ntp1993Male14780$Time, Ntp1993Male14780$CKU)
+lines(Ntp1993Male14775$Time, Ntp1993Male14775$CKU)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```
 
 ##### 5. Male F344 rats with oral gavage of 14775 µg Hg/kg/d for 16 days (Ntp 1993): brain 
 ```{r}
-data_t_Ntp1993Male14775_brain <- c(384);
+data_t <- c(384);
 data_c_Ntp1993Male14775_brain <- c(0.203);
 sd <- c(0.27)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
 
-plot(data_t, data_c, main = "Ntp 1993, 16 day, Oral = 14775, Male rat", xlab = "Time (hr)", ylab = "CBrn (ug/g)", xlim = c(0, 400), ylim = c(0.001, 10), log='y')
+plot(data_t, data_c_Ntp1993Male14775_brain, 
+     main = "Ntp 1993, 16 day, Oral = 14775, Male rat",
+     xlab = "Time (hr)", ylab = "CBrn (ug/g)", xlim = c(0, 400), ylim = c(0.001, 10), log='y')
 arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
-lines(Ntp1993Female14780$Time, Ntp1993Female14780$CBrnU)
+lines(Ntp1993Female14775$Time, Ntp1993Female14775$CBrnU)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```
 
 ##### 5. Female F344 rats with oral gavage of 14775 µg Hg/kg/d for 16 days (Ntp 1993): liver 
 ```{r}
-data_t_Ntp1993Female14775_liver <- c(384);
+data_t <- c(384);
 data_c_Ntp1993Female14775_liver <- c(4.31);
 sd <- c(1.3)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
 
-plot(data_t, data_c, main = "Ntp 1993, 16 day, Oral = 14775, Female rat", xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 400), ylim = c(1, 20), log='y')
+plot(data_t, data_c_Ntp1993Female14775_liver, 
+     main = "Ntp 1993, 16 day, Oral = 14775, Female rat", 
+     xlab = "Time (hr)", ylab = "CL (ug/g)", xlim = c(0, 400), ylim = c(1, 20), log='y')
 arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
-lines(Ntp1993Female14780$Time, Ntp1993Female14780$CLU)
+lines(Ntp1993Female14775$Time, Ntp1993Female14775$CLU)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```
 
 ##### 5. Female F344 rats with oral gavage of 14775 µg Hg/kg/d for 16 days (Ntp 1993): kidney 
 ```{r}
-data_t_Ntp1993Female14775_kidney <- c(384);
+data_t <- c(384);
 data_c_Ntp1993Female14775_kidney <- c(42.4);
 sd <- c(16.4)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
 
-plot(data_t, data_c, main = "Ntp 1993, 16 day, Oral = 14775, Female rat", xlab = "Time (hr)", ylab = "CK (ug/g)", xlim = c(0, 400), ylim = c(1, 2000), log='y')
+plot(data_t, data_c_Ntp1993Female14775_kidney,
+     main = "Ntp 1993, 16 day, Oral = 14775, Female rat", xlab = "Time (hr)", ylab = "CK (ug/g)", 
+     xlim = c(0, 400), ylim = c(1, 2000), log='y')
 arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
-lines(Ntp1993Female14780$Time, Ntp1993Female14780$CKU)
+lines(Ntp1993Female14775$Time, Ntp1993Female14775$CKU)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```
 
 ##### 5. Female F344 rats with oral gavage of 14775 µg Hg/kg/d for 16 days (Ntp 1993): brain 
 ```{r}
-data_t_Ntp1993Female14775_brain <- c(384);
+data_t <- c(384);
 data_c_Ntp1993Female14775_brain <- c(0.31);
 sd <- c(0.15)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
 
-plot(data_t, data_c, main = "Ntp 1993, 16 day, Oral = 14775, Female rat", xlab = "Time (hr)", ylab = "CBrn (ug/g)", xlim = c(0, 400), ylim = c(0.01, 10), log='y')
+plot(data_t, data_c_Ntp1993Female14775_brain, 
+     main = "Ntp 1993, 16 day, Oral = 14775, Female rat", 
+     xlab = "Time (hr)", ylab = "CBrn (ug/g)", xlim = c(0, 400), ylim = c(0.01, 10), log='y')
 arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
-lines(Ntp1993Female14780$Time, Ntp1993Female14780$CBrnU)
+lines(Ntp1993Female14775$Time, Ntp1993Female14775$CBrnU)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```
 
@@ -553,13 +573,15 @@ Shi15000  <- readsims(Shi, exp=1)
 
 ##### 6. Shi 2011, Male SD rats : kidney
 ```{r}
-data_t_Shi15000_kidney <- c(1450);
+data_t <- c(1450);
 data_c_Shi15000_kidney <- c(89.83957219);
 sd <- c(72)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
 
-plot(data_t, data_c, main = "Shi, 2011, Male SD rats, 15000 ug/kg", xlab = "Time (hr)", ylab = "CKU (ug/g)", xlim = c(0, 1500), ylim = c(1, 1000), log='y')
+plot(data_t, data_c_Shi15000_kidney, 
+     main = "Shi, 2011, Male SD rats, 15000 ug/kg", 
+     xlab = "Time (hr)", ylab = "CKU (ug/g)", xlim = c(0, 1500), ylim = c(1, 1000), log='y')
 arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
 lines(Shi15000$Time, Shi15000$CKU)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
@@ -573,13 +595,13 @@ Zhang <- readsims(Zhang25560, exp=1)
 
 ##### 7. Zhang 2007, Male SD rats : kidney
 ```{r}
-data_t_Zhang25560_kidney <- c(168);
+data_t <- c(168);
 data_c_Zhang25560_kidney <- c(265);
 sd <- c(33.6)
 sd.up <- data_c_Zhang25560_kidney + sd
 sd.dn <- data_c_Zhang25560_kidney - sd
 
-plot(data_t_Zhang25560_kidney, data_c_Zhang25560_kidney, 
+plot(data_t, data_c_Zhang25560_kidney, 
      main = "Zhang 2017, SD rats, 25,560 ug/kg", xlab = "Time (hr)", ylab = "CKU (ug/g)", 
      xlim = c(0, 168), ylim = c(1, 1000), log='y')
 arrows(data_t_Zhang25560_kidney, sd.dn, data_t_Zhang25560_kidney, sd.up, code=3, length=0.02, angle=90)
@@ -590,13 +612,13 @@ legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 
 ##### 7. Zhang 2007, Male SD rats : liver
 ```{r}
-data_t_Zhang25560_liver <- c(168);
+data_t <- c(168);
 data_c_Zhang25560_liver <- c(35.36);
 sd <- c(34.272)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
 
-plot(data_t, data_c, main = "Zhang 2017, SD rats, 25,560 ug/kg", xlab = "Time (hr)", ylab = "CLU (ug/g)", xlim = c(0, 168), ylim = c(1, 1000), log='y')
+plot(data_t, data_c_Zhang25560_liver, main = "Zhang 2017, SD rats, 25,560 ug/kg", xlab = "Time (hr)", ylab = "CLU (ug/g)", xlim = c(0, 168), ylim = c(1, 1000), log='y')
 arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
 lines(Zhang$Time, Zhang$CLU)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
@@ -844,6 +866,59 @@ dim(pred_pop)
 names(pred_pop)
 ```
 
+```{r}
+validation_data <- c(data_c_Ntp1993RatMale230_liver,
+data_c_Ntp1993RatMale230_kidney,
+data_c_Ntp1993RatMale925_liver,
+data_c_Ntp1993RatMale925_kidney,
+data_c_Ntp1993RatMale3695_liver,
+data_c_Ntp1993RatMale3695_kidney,
+data_c_Ntp1993RatMale3695_brain,
+data_c_Ntp1993Male14775_liver,
+data_c_Ntp1993Male14775_kidney,
+data_c_Ntp1993Male14775_brain,
+data_c_Ntp1993Female14775_liver,
+data_c_Ntp1993Female14775_kidney,
+data_c_Ntp1993Female14775_brain,
+data_c_Shi15000_kidney,
+data_c_Zhang25560_liver,
+data_c_Zhang25560_kidney)
+```
+
+```{r}
+str <- which(names(pred_pop)=="CLU_1.1")
+pred_pop_data <- pred_pop[,c(str:dim(pred_pop)[2])]
+organs <- c("Liver", "Liver", "Liver", 
+            "Kidney", "Kidney", "Kidney", 
+            "Liver", "Liver", "Liver", 
+            "Kidney", "Kidney", "Kidney", 
+            "Liver", "Liver", "Liver", 
+            "Kidney", "Kidney", "Kidney", 
+            "Brain", "Brain",
+            "Liver", "Kidney", "Brain",
+            "Liver", "Kidney", "Brain",
+            "Kidney", 
+            "Liver", "Kidney")
+study <- c(rep("Ntp 1993", 26), 
+           "Shi 2011", 
+           rep("Zhang 2017"), 2)
+dose <- c(rep(c("230 ug/kg", "925 ug/kg", "3695 ug/kg"), 6),
+          rep("3695 ug/kg", 2),
+          rep("14775 ug/kg", 6),
+          "15000 ug/kg",
+          rep("25560 ug/kg", 2))
+
+# check data length
+length(na.omit(validation_data))==dim(pred_pop_data)[2]
+
+reshape2::melt(pred_pop_data) |> mutate(obs = rep(na.omit(validation_data), each =1000)) |>
+  mutate(ratio = value / obs) |> select(variable, ratio) |> group_by(variable) |> 
+  summarise(median=median(ratio), 
+            lwr=quantile(ratio, probs=0.025),
+            upr=quantile(ratio, probs=0.975)) |>
+  mutate(organs = organs, study=study, dose=dose) |> 
+  unite("Lable", study:dose)
+```
 
 
 
