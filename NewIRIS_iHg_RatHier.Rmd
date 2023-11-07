@@ -852,7 +852,7 @@ mcmc_out <- x[j, , pars]
 l <- dim(mcmc_out)[1] * dim(mcmc_out)[2]
 dim(mcmc_out) <- c(l, length(pars))
 colnames(mcmc_out) <- pars
-i <- sample(dim(mcmc_out)[1], 1000) # random select 1000 draws
+i <- sample(dim(mcmc_out)[1], 10) # random select 10 draws
 tmp.x <- mcmc_out[i, pars] 
 tmp.x |> write.table(file="poppred.dat", row.names=T, sep="\t")
 model <- "iHgRatBW.model"
@@ -901,7 +901,7 @@ organs <- c("Liver", "Liver", "Liver",
             "Liver", "Kidney")
 study <- c(rep("Ntp 1993", 26), 
            "Shi 2011", 
-           rep("Zhang 2017"), 2)
+           rep("Zhang 2017", 2))
 dose <- c(rep(c("230 ug/kg", "925 ug/kg", "3695 ug/kg"), 6),
           rep("3695 ug/kg", 2),
           rep("14775 ug/kg", 6),
@@ -911,16 +911,19 @@ dose <- c(rep(c("230 ug/kg", "925 ug/kg", "3695 ug/kg"), 6),
 # check data length
 length(na.omit(validation_data))==dim(pred_pop_data)[2]
 
-reshape2::melt(pred_pop_data) |> mutate(obs = rep(na.omit(validation_data), each =1000)) |>
-  mutate(ratio = value / obs) |> select(variable, ratio) |> group_by(variable) |> 
-  summarise(median=median(ratio), 
-            lwr=quantile(ratio, probs=0.025),
-            upr=quantile(ratio, probs=0.975)) |>
-  mutate(organs = organs, study=study, dose=dose) |> 
-  unite("Lable", study:dose)
+reshape2::melt(pred_pop_data) |> mutate(obs = rep(na.omit(validation_data), each=10)) |>
+  mutate(ratio = value / obs) |> select(variable, ratio) |> 
+  mutate(organs = rep(organs, each=10), study= rep(study, each=10), dose=rep(dose, each=10)) |> 
+  unite("label", study:dose) |>
+  ggplot() + 
+  geom_point(aes(x=ratio, y=label)) +
+  scale_x_log10() +
+  facet_grid(~organs) +
+  theme_bw() + 
+  geom_vline(xintercept = 1, lty=2) +
+  labs(x="Prediction / Observation", y="Study") +
+  theme(strip.background = element_blank())
 ```
-
-
 
 # Software package
 # Check the software package version that will be used in this 
