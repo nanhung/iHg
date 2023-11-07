@@ -1,0 +1,467 @@
+---
+title: "iHg - Markov chain Monte Carlo Calibration"
+author: "Nan-Hung Hsieh" modified by "Yu-Sheng Lin"
+date: "2023/02/05 (update: `r Sys.Date()`)"
+output: 
+  html_document:
+  fig_caption: yes  
+---
+# cd ./mcsim-6.2.0/IRIS_iHg/modeling/HumanHier
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd('..')
+wd <- getwd()
+knitr::opts_knit$set(root.dir =  wd)
+```
+
+# 0 Prerequisites
+```{r, include=FALSE}
+source("MCSim/function.R")
+```
+
+# Import the R packages
+```{R message=FALSE, warning=FALSE}
+library(tidyverse)
+library(rstan)
+library(bayesplot)
+library(corrplot)
+library(sensitivity)
+library(pksensi)
+theme_set(theme_light())
+```
+
+##### 2. QA/QC check
+
+
+##### 2.1 Balance check and gavage calculation check --- dynamic body weight change only for humans
+```{r}
+test <- mcsim(model = "iHgHumanBW.model.R", input = "iHgHumanFarrisBW.in.R", dir = "modeling")
+testex <- readsims(test,  exp=1) 
+plot (testex$Time, testex$BalanceCheck, xlim = c(0, 2200), ylim = c(-1, 1),  type="l", lwd=2, xlab="Time", ylab="mass balance")
+```
+
+###### 3.1 Model verification of Individual studies ########
+
+#################### human study #################
+
+##### 1. Human volunteers (assumed BW of 70 kg)
+# Single IV dose of 0.025 µg Hg/kg [0.6–2.8 µg Hg from 
+# 203Hg(NO3)2] (Farris, 2008)
+```{r}
+Farris <- mcsim(model = "iHgHumanBW.model.R", input = "iHgHumanFarrisBW.in.R", dir = "modeling")
+Farris <- readsims(Farris, exp=1) 
+```
+
+##### 1. Human w/ single IV dose of 0.025 µg Hg/kg  (Farris, 2008): feces    
+```{r}
+data_t <- c(24 , 48 , 72 , 96 , 120 , 144 , 168 , 336 , 504 , 672 , 840 , 1008 , 1176 , 1344 , 1512 , 1680);
+data_c <- c(0.05 , 0.08148 , 0.09493671 , 0.10810127 , 0.15063291 , 0.15949367 , 0.1733971 , 0.21359439 , 0.2432366 , 0.27616296 , 0.29439456 , 0.32346864 , 0.34659148 , 0.36122036 , 0.38278073 , 0.40246241);
+      
+plot(data_t, data_c, main = "Human Farris, 2008, IV=0.025", xlab = "Time (hr)", ylab = "Afeces (ug)", xlim = c(0, 1700), ylim = c(0.01, 10), log='y')
+lines(Farris$Time, Farris$Afeces)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 1. Human w/ single IV dose of 0.02 µg Hg/kg  (Farris, 2008): urine    
+```{r}
+data_t <- c(24 , 48 , 72 , 96 , 120 , 144 , 168 , 336 , 504 , 672 , 840 , 1008 , 1176 , 1344 , 1512 , 1680);
+data_c <- c(0.01016 , 0.02318471 , 0.02675159 , 0.03388535 , 0.03923567 , 0.04458599 , 0.04902761 , 0.0929182 , 0.12125111 , 0.16541369 , 0.19404394 , 0.23234815 , 0.26564472 , 0.29066447 , 0.31457481 , 0.34118414);
+
+plot(data_t, data_c, main = "Human Farris, 2008, IV=0.02", xlab = "Time (hr)", ylab = "Aurine (ug)", xlim = c(0, 1700), ylim = c(0.01, 1), log='y')
+lines(Farris$Time, Farris$Aurine)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 1. Human w/ single IV dose of 0.025 µg Hg/kg  (Farris, 2008): blood in the unit of ug/ml   
+```{r}
+data_t <- c(24 , 72 , 96 , 168 , 336 , 504 , 672 , 840 , 1008 , 1176 , 1344 , 1512, 1680);
+data_c <- c(0.0972 , 0.0377 , 0.0257 , 0.0171 , 0.0103 , 0.0082 , 0.0069 , 0.0061 , 0.0062 , 0.0051 , 0.0045 , 0.0046 ,0.0039);
+
+plot(data_t, data_c, main = "Human Farris, 2008, IV=0.02", xlab = "Time (hr)", ylab = "ABld (ug)", xlim = c(0, 1700), ylim = c(0.001, 10), log='y')
+lines(Farris$Time, Farris$ABld)
+legend("topright", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+# conc. data_c <- c(0.981605057,		0.388320929	,	0.175181914	,	0.105565314	,	0.084128514	,	0.070550414	,	# 0.062251586	# ,	0.064024129	,	0.052330886	,	0.046171486	,	0.047486971,	0.039810071);
+
+
+
+##### 2. Human volunteers (BW = 64 kg) (Rahola, 1973) 
+# Single oral dose of 0.09375 µg Hg/kg (6 µg Hg from 203Hg(NO3)2]j 
+```{r}
+Rahola <- mcsim(model = "iHgHumanBW.model.R", input = "iHgHumanRaholaBW.in.R", dir = "modeling")
+Rahola <- readsims(Rahola, exp=1) 
+```
+
+##### 2. Human w/ single oral dose of 0.09375 µg Hg/kg  (Rahola, 1973): feces    
+```{r}
+data_t <- c(24 , 48 , 72 , 96 , 144 , 192 , 240 , 288 , 336 , 384 , 408 , 432 , 456 , 528 , 672 , 720 , 1224 , 1248 , 1272);
+data_c <- c(1.477809 , 3.470468 , 4.724273 , 5.272337 , 5.665805 , 5.774183 , 5.811173 , 5.826059 , 5.835748 , 5.842266 , 5.847794 , 5.855498 , 5.859217 , 5.863198 , 5.864334 , 5.865867 , 5.866668 , 5.867613 , 5.868693);
+
+plot(data_t, data_c, main = "Human Rahola, 1973, oral=0.09375", xlab = "Time (hr)", ylab = "Afeces (ug)", xlim = c(0, 1300), ylim = c(0.1,100), log='y')
+lines(Rahola$Time, Rahola$Afeces)
+legend("topright", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 2. Human w/ single oral dose of 0.09375 µg Hg/kg  (Rahola, 1973): urine    
+```{r}
+data_t <- c(24 , 48 , 72 , 96 , 144 , 192 , 240 , 288 , 336 , 384 , 408 , 432 , 456 , 528 , 672 , 720 , 1224 , 1248 , 1272 , 1824 , 1848);
+data_c <- c(0.001754597 , 0.004511698 , 0.006563485 , 0.008784912 , 0.012570932 , 0.016304637 , 0.020405739 , 0.022484365 , 0.028068776 , 0.030784725 , 0.035378559 , 0.042058603 , 0.045490943 , 0.050140927 , 0.056225823 , 0.063441201 , 0.064927833 , 0.067125743 , 0.068868326 , 0.076238348 , 0.076842953);
+
+plot(data_t, data_c, main = "Human Rahola, 1973, oral=0.09375", xlab = "Time (hr)", ylab = "Aurine (ug)", xlim = c(0, 1850), ylim = c(0.001, 1), log='y')
+lines(Rahola$Time, Rahola$Aurine)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+
+##### 3. Human volunteers (BW = 48 kg) (Yoshida, 1997) 
+# Single oral dose of Hg (0.66g)
+```{r}
+Yoshida <- mcsim(model = "iHgHumanBW.model.R", input = "iHgHumanYoshidaBW.in.R", dir = "modeling")
+Yoshida <- readsims(Yoshida, exp=1) 
+```
+
+
+##### 3. Human w/ single oral dose of 13750 µg Hg/kg  (Yoshida, 1997): urine 
+```{r}
+data_t <- c(528 , 562 , 600 , 715 , 763 , 811 , 859 , 907 , 955 , 1022 , 1070 , 1094 , 1118 , 1142 , 1166 , 1186 , 1243 , 1262 , 1286 , 1301 , 1330 , 1382 , 1435 , 1450 , 1474 , 1550 , 1613 , 1642 , 1666 , 1680 , 1742 , 1786 , 1810 , 1834 , 1858 , 1901 , 1973 , 2002 , 2030 , 2069 , 2213 , 2242);
+
+data_c <- c(409.0 , 934.6 , 1603.7 , 2516.1 , 3439.6 , 4446.1 , 5015.7 , 5585.3 , 6204.6 , 6707.8 , 7365.9 , 7841.5 , 8449.8 , 9107.8 , 9644.2 , 10263.6 , 11065.4 , 11568.7 , 12530.9 , 12934.6 , 13343.8 , 13813.8 , 14234.1 , 14632.3 , 15074.7 , 15257.1 , 15561.3 , 15826.7 , 16119.8 , 16556.7 , 16827.6 , 17087.6 , 17424.9 , 17612.9 , 17812.0 , 17972.4 , 18177.0 , 18436.9 , 18785.3 , 19034.1 , 19249.8 , 19581.6);
+
+plot(data_t, data_c, main = "Human Yoshida, 1997 Single oral of 0.66 g", xlab = "Time (hr)", ylab = "Aurine (ug)", xlim = c(0, 1850), ylim = c(1, 30000), log='y')
+lines(Yoshida$Time, Yoshida$Aurine)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 3. Human w/ single oral of 13750 µg Hg/kg  (Yoshida, 1997): blood  
+```{r}
+data_t <- c(315	,	1213	,	1328	,	1500	,	1672	,	1835	,	2011	,	2174);
+data_c <- c(1.410	,	0.728	,	0.543	,	0.449	,	0.250	,	0.253	,	0.204	,	0.166);
+
+plot(data_t, data_c, main = "Human Yoshida, 1997, Single oral of 0.66 g", xlab = "Time (hr)", ylab = "CBldU (ug/ml)", xlim = c(0, 3300), ylim = c(0.01, 10), log='y')
+lines(Yoshida$Time, Yoshida$CBldU)
+legend("topright", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+##### 4. Monkey (BW = 3.53 kg) (Vahter, 1994) 
+# IV (608 ug/day or ug/kg/day)
+```{r}
+Vahter <- mcsim(model = "iHgHumanBW.model.R", input = "iHgMonkeyVahterBW.in.R", dir = "modeling")
+Vahter <- readsims(Vahter, exp=1) 
+```
+
+# 4.  Monkey (BW = 3.53 kg) (Vahter, 1994) : brain
+```{r}
+data_t <- c(1272);
+data_c <- c(0.09317);
+sd <- c(0.03)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Vahter, 1994, daily IV, Monkey", xlab = "Time (hr)", ylab = "CBrn (ug/g)", xlim = c(0, 1300), ylim = c(0.01, 10), log='y')
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+lines(Vahter$Time, Vahter$CBrnU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+# 4.  Monkey (BW = 3.53 kg) (Vahter, 1994) : blood
+```{r}
+data_t <- c(168);
+data_c <- c(0.6);
+sd <- c(0.14)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+
+plot(data_t, data_c, main = "Vahter, 1994, daily IV, Monkey", xlab = "Time (hr)", ylab = "CBld (ug/g)", xlim = c(0, 200), ylim = c(0.01, 10), log='y')
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+lines(Vahter$Time, Vahter$CBldU)
+legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
+```
+
+
+#### Below is MCMC analysis #################################################################################### 
+# Size of output summary
+```{r}
+dim(x)
+# X [iteration, chain, parameter]
+```
+
+# Single chain check
+# Checking model fit using one single chain #
+# Global evaluation/ "MCMC.check.out" has "Data" and "Predicion"
+```{r}
+single_1 <- read.delim("C:/Users/ysl02/mcsim-6.2.0/IRIS_iHg/modeling/HumanHier/iHgHuman_4880.out")
+tail(single_1)
+```
+
+## Result diagnosis ##
+# Trace plot
+```{r}
+str <- ceiling(nrow(single_1)/2) + 1
+end <- nrow(single_1)
+j <- c(str:end) # discard burn-in
+par(mfrow = c(3,4), mar = c(2,2,2,1))
+for (i in 2:44){
+  plot(single_1[j,1], single_1[j,i], type = "l", main = names(single_1)[i])
+}
+```
+
+# Auto correlation
+```{r}
+par(mfrow = c(3,4), mar = c(2,2,4,1))
+for (i in 2:44){
+  acf(single_1[j,i], main = names(single_1)[i])
+}
+```
+
+# Density plot
+```{r}
+par(mfrow = c(3,4), mar = c(2,2,2,1))
+for (i in 2:44){
+  single_1[j,i] %>% density() %>% plot(type = "l", main = names(single_1)[i])
+}
+```
+
+# Correlation matrix
+```{r}
+single_1[,9:17] %>% cor() %>% corrplot(method = "number")
+```
+
+# Global evaluation/ "MCMC.check.out" has "Data" and "Predicion"
+# Check simulation result with the parameter from the last iteration
+```{r}
+Humanchk_1 <- read.delim("C:/Users/ysl02/mcsim-6.2.0/IRIS_iHg/modeling/HumanHier/iHgHuman_check_4880.out")
+tail(Humanchk_1)
+```
+
+# Overall fitting evaluation
+```{r}
+R_square <- cor(Humanchk_1$Data, Humanchk_1$Prediction)^2
+plot(Humanchk_1$Data, Humanchk_1$Prediction, log = "xy",
+     xlim = c(0.001, 1000), ylim = c(0.001, 1000),
+     xlab = "Observation for iHg in humans", ylab = "Prediction for iHg in humans",
+     main = paste("R2 =", round(R_square, digits = 3)))
+abline(0,1)
+```
+
+# Individual measurement fitting evaluation 
+# (1) amount of iHg in feces
+```{r}
+Humanchk_1 %>% filter(Output_Var == "Afeces") %>%
+ggplot(aes(x = Time, y = Data)) +
+  geom_point() + 
+  geom_line(aes(y = Prediction))+
+  facet_wrap(~Simulation) +
+  scale_y_log10() + 
+  labs(x = "Time (min)", y = "amount (ug)", title = "Accumulative amount of excreted iHg in feces (ug) in humans")
+```
+
+# (2) amount of iHg in urine
+```{r}
+Humanchk_1 %>% filter(Output_Var == "Aurine") %>%
+ggplot(aes(x = Time, y = Data)) +
+  geom_point() + 
+  geom_line(aes(y = Prediction))+
+  facet_wrap(~Simulation) +
+  scale_y_log10() + 
+  labs(x = "Time (min)", y = "amount (ug)", title = "Accumulative amount of excreted iHg in urine (ug) in humans")
+```
+
+#### 2.5 Multi chains testing ### 
+#### MCMC Modeling ###
+### Using Ubuntu instead ###
+
+```{r, eval=F}
+Humanjob1 <- read.delim("C:/Users/ysl02/mcsim-6.2.0/IRIS_iHg/modeling/HumanHier/iHgHuman_4880.out")
+Humanjob2 <- read.delim("C:/Users/ysl02/mcsim-6.2.0/IRIS_iHg/modeling/HumanHier/iHgHuman_3365.out")
+Humanjob3 <- read.delim("C:/Users/ysl02/mcsim-6.2.0/IRIS_iHg/modeling/HumanHier/iHgHuman_5916.out")
+Humanjob4 <- read.delim("C:/Users/ysl02/mcsim-6.2.0/IRIS_iHg/modeling/HumanHier/iHgHuman_6734.out")
+x <- mcmc_array(data = list(Humanjob1, Humanjob2, Humanjob3, Humanjob4))
+str <- ceiling(nrow(x)/2) + 1
+end <- nrow(x)
+j <- c(str:end) # discard burn-in
+```
+
+# Size of output summary
+```{r}
+dim(x)
+# X [iteration, chain, parameter]
+```
+# traceplot and density diagnosis
+```{r}
+pars_Error <- c("Ve_Aurine.1.",	"Ve_Afeces.1.",	"Ve_CBldU.1.",	"Ve_CKU.1.",	"Ve_CLU.1.",	"Ve_CBrnU.1.")
+            
+pars_Pop <- c("lnPLC.1.", "lnPKC.1.", "lnPBrnC.1.",	"lnPRestC.1.",	"lnKabsC.1.",	"lnKunabsC.1.",	"lnKbileC.1.",	"lnKurineC.1.",	"lnKbrnC.1.")
+
+pars_Study <- c("lnPLC.1.1.", "lnPKC.1.1.", "lnPBrnC.1.1.",	"lnPRestC.1.1.",	"lnKabsC.1.1.",	"lnKunabsC.1.1.",	"lnKbileC.1.1.",	"lnKurineC.1.1.",	"lnKbrnC.1.1.", "lnPLC.1.2.", "lnPKC.1.2.", "lnPBrnC.1.2.",	"lnPRestC.1.2.",	"lnKabsC.1.2.",	"lnKunabsC.1.2.",	"lnKbileC.1.2.",	"lnKurineC.1.2.",	"lnKbrnC.1.2.")
+
+pars_Dist <- c("LnPrior",	"LnPosterior",	"LnData")
+
+mcmc_dens_overlay(x[j,,],  pars = pars_Error)
+mcmc_dens_overlay(x[j,,],  pars = pars_Pop)
+mcmc_dens_overlay(x[j,,],  pars = pars_Study)
+mcmc_dens_overlay(x[j,,],  pars = pars_Dist)
+
+mcmc_trace(x[j,,], pars = pars_Error)
+mcmc_trace(x[j,,], pars = pars_Pop)
+mcmc_trace(x[j,,], pars = pars_Study)
+mcmc_trace(x[j,,], pars = pars_Dist)
+```
+
+# Andrew Gelman Scale Reduction Factor
+```{r}
+monitor(x, digits = 4)
+```
+
+
+# Andrew Gelman Scale Reduction Factor
+```{r}
+Humanmonitor <-monitor(x, digits=4, probs = c(0.025, 0.5, 0.975), warmup = floor(dim(x)[1]/2))
+print(Humanmonitor)
+#install.packages("writexl")
+#library(writexl)
+#write_xlsx(x = Humanmonitor, path = "C:/Users/ysl02/mcsim-6.2.0/IRIS_iHg/modeling/HumanHier/HumanIHg.xlsx", col_names = TRUE)
+```
+
+####################### Monte Carlo simulation ##############
+# 1. Modeling using Yoshdia 1993 human (single dose of 13750 µg Hg/kg)
+```{r}
+out <- mcsim(model = "iHgHumanBW.model.R", input = "iHgHumanMTC.R", dir = "C:/Users/ysl02/mcsim-6.2.0/IRIS_iHg/modeling/HumanHier")
+```
+
+```{r}
+tail(out)
+```
+
+# 2. Data wrangling
+```{r}
+vars <- names(out)
+index <- which(vars == "CKU_1.1" | vars == "CKU_1.3")
+time <- seq(0, 4400, 1) # corresponding time-points
+data_t <- c(1428, 2868,	4308)
+data_c <- c(87.94,	97.19,	87.96)
+sd <- c(18.2, 14.4, 9.68)
+sd.up <- data_c + sd
+sd.dn <- data_c - sd
+exp_data <- data.frame(data_t, data_c)
+X <- apply(out[,index[1]:index[2]], 2, quantile,  c(0.5, 0.025, 0.975)) %>% t() # 95% CI
+colnames(X) <- c("median", "LCL", "UCL")
+df <- as.data.frame(X)
+df$time <- c(1428, 2868,	4308)
+```
+
+# 3. Plotting
+```{r, warning=F}
+ggplot(df, aes(x = time, y = median)) +
+    geom_ribbon(aes(ymin = LCL, ymax = UCL), fill = "grey70", alpha = 0.5) + 
+    geom_line() + 
+    scale_y_continuous(trans='log10')+
+    geom_point(data = exp_data, aes(x = data_t, y = data_c)) +
+    geom_errorbar(data = exp_data, aes(x = data_t, y = data_c, ymin=data_c-sd, ymax=data_c+sd), width=.1) +
+    labs(x = "Time (hr)", y = "Concentration (mg/L)")
+```
+
+###### Sensitivity analysis --- Morris elementary effects screening
+# Argument setting
+```{r}
+ lnPLC <- 1.778
+ lnPKC <- 3.219
+ lnPBrnC	<-	-0.2784	
+ lnPRestC <-	0.0862 
+
+ lnKabsC	<-	-2.9957	
+ lnKunabsC	<-	-0.7985	
+ lnKbileC	<-	-0.562118918
+ lnKurineC	<-	-2.5257	
+ lnKbrnC	<-	-5.8456314684698 
+
+ baseline <- c(lnPLC, lnPKC, lnPBrnC, lnPRestC, lnKabsC, lnKunabsC, lnKbileC, lnKurineC, lnKbrnC)
+ limit <- c(rep(2, 4), rep(4, 5))
+ binf <- baseline/limit
+ bsup <- baseline*limit
+
+ parameters <- c("lnPLC", "lnPKC", "lnPBrnC", "lnPBrnC", "lnPRestC", "lnKabsC", "lnKunabsC", "lnKbileC", "lnKurineC",  "lnKbrnC")
+```
+
+# 2. Generate parameter matrix
+```{r}
+set.seed(1234)
+x <- morris(model = NULL, factors = parameters, r = 512,
+            design = list(type = "oat", levels = 5, grid.jump = 3),
+            binf = binf, bsup = bsup)
+X <- cbind(1, x$X)
+write.table(X, file = "setpts.out", row.names = F, sep = "\t")
+```
+
+# 3. Modeling
+# Do this under Ubuntu
+```{r}
+out <- mcsim(model = "iHgHumanBW.model.R",  input = "iHgHuman_setpts.in.R", dir = "C:/Users/ysl02/mcsim-6.2.0/IRIS_iHg/modeling/HumanHier")
+```
+
+# 4. Plotting result
+```{r}
+str <- which(names(out) == "CLU_1.1")
+end <- which(names(out) == "CBrnU_3.3")
+par(mfrow = c(2,3), mar = c(2,2,1,1))
+for (i in str:end){
+tell(x, log(out[,i]))
+plot(x, xlim=c(0,3), main = paste("Time = ",4 + (i - str)*0.5, "hr"))
+abline(v = 0.5)
+}
+```
+
+```{r}
+monitor(x, digits = 4)
+```
+
+###### Uncertainty analysis again
+
+Adjust the range of Pf (to 4 times different), VmaxC (to 8 times different) and VmaxCvr (to 8 times different), and check the possible output.
+
+```{r}
+ baseline <- c(lnPLC, lnPKC, lnPBrnC, lnPRestC, lnKabsC, lnKunabsC, lnKbileC, lnKurineC, lnKbrnC)
+new_limit <- c(2, 2, rep(4, 7))
+binf <- baseline/new_limit
+bsup <- baseline*new_limit
+dist <- c(rep("Uniform", 8), "LogUniform", "Uniform", "LogUniform")
+q.arg <- list(list(min = binf[1], max = bsup[1]),
+              list(min = binf[2], max = bsup[2]),
+              list(min = binf[3], max = bsup[3]),
+              list(min = binf[4], max = bsup[4]),
+              list(min = binf[5], max = bsup[5]),
+              list(min = binf[6], max = bsup[6]),
+              list(min = binf[7], max = bsup[7]),
+              list(min = binf[8], max = bsup[8]),
+              list(min = binf[9], max = bsup[9])) 
+outputs <- c("Cvtot")
+conditions <- c("Cppm = NDoses (2, 100, 0, 0, 4 )")
+```
+
+# Run MC simulation
+```{r}
+set.seed(2222)
+y<-solve_mcsim(mName = "iHgHumanBW.model.R", params = parameters, vars = outputs,
+               monte_carlo = 1000, dist = dist, q.arg = q.arg, time = time, 
+               condition = conditions, rtol = 1e-9, atol = 1e-11)
+```
+
+Check result
+
+```{r}
+pksim(y)
+points(data_t, data_c)
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
+```
+
+# Software package
+# Check the software package version that will be used in this 
+# example.
+```{r, eval=T}
+devtools::session_info()
+```
+
+```{r, include=FALSE}
+clear()
+```
