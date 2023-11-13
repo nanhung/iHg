@@ -38,7 +38,7 @@ library(sensitivity)
 library(pksensi)
 library(data.table)
 library(coda)
-theme_set(theme_light())
+theme_set(theme_bw())
 ```
 
 ##### 2. QA/QC check
@@ -919,7 +919,6 @@ reshape2::melt(pred_pop_data) |> mutate(obs = rep(na.omit(validation_data), each
   geom_point(aes(x=ratio, y=label)) +
   scale_x_log10() +
   facet_grid(~organs) +
-  theme_bw() + 
   geom_vline(xintercept = 1, lty=2) +
   labs(x="Prediction / Observation", y="Study") +
   theme(strip.background = element_blank())
