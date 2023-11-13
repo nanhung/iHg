@@ -433,8 +433,9 @@ Ntp1993Female29550 <- readsims(Ntp1993wks, exp=2)
 
 ##### 5. Male B6C3Fl mice with oral gavage of 29550 µg Hg (as 40 mg HgCl2) /kg/d for 16 days (Ntp 1993): liver 
 ```{r}
-data_t <- c(384);
-data_c <- c(34.35);
+data_t <- c(384)
+data_c <- c(34.35)
+data_c_Ntp1993Male29550liver <- data_c
 sd <- c(21.57)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
@@ -449,6 +450,7 @@ legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```{r}
 data_t <- c(384);
 data_c <- c(170.892);
+data_c_Ntp1993Male29550kidney <- data_c
 sd <- c(47.7)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
@@ -463,6 +465,7 @@ legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```{r}
 data_t <- c(384);
 data_c <- c(0.47);
+data_c_Ntp1993Male29550brain <- data_c
 sd <- c(0.376)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
@@ -477,6 +480,7 @@ legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```{r}
 data_t <- c(384);
 data_c <- c(29.18);
+data_c_Ntp1993Female29550liver <- data_c
 sd <- c(10.05)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
@@ -491,6 +495,7 @@ legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```{r}
 data_t <- c(384);
 data_c <- c(115.592);
+data_c_Ntp1993Female29550kidney <- data_c
 sd <- c(8.7)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
@@ -505,6 +510,7 @@ legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```{r}
 data_t <- c(384);
 data_c <- c(0.493);
+data_c_Ntp1993Female29550brain <- data_c
 sd <- c(0.224)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
@@ -526,6 +532,7 @@ Wang <- readsims(Wang10000, exp=1)
 ```{r}
 data_t <- c(240);
 data_c <- c(5.560);
+data_c_Wang10000liver <- data_c
 sd <- c(4.195)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
@@ -541,6 +548,7 @@ legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```{r}
 data_t <- c(240);
 data_c <- c(23.578);
+data_c_Wang10000kidney <- data_c
 sd <- c(1.54499)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
@@ -556,6 +564,7 @@ legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```{r}
 data_t <- c(240);
 data_c <- c(0.189);
+data_c_Wang10000brain <- data_c
 sd <- c(0.04)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
@@ -571,6 +580,7 @@ legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```{r}
 data_t <- c(240);
 data_c <- c(0.400);
+data_c_Wang10000blood <- data_c
 sd <- c(0.104)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
@@ -594,6 +604,7 @@ Havar <- readsims(Havar148, exp=1)
 ```{r}
 data_t <- c(24, 36, 48);
 data_c <- c(0.5565217391,	2.12173913,	2.504347826);
+
 sd <- c(0.5, 0.5, 0.5)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
@@ -617,6 +628,7 @@ Sin<- readsims(Sin6000, exp=1)
 ```{r}
 data_t <- c(240);
 data_c <- c(57.82);
+data_c_Sin6000kidney <- data_c
 sd <- c(19.159)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
@@ -633,6 +645,7 @@ legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```{r}
 data_t <- c(240);
 data_c <- c(8.4);
+data_c_Sin6000liver <- data_c
 sd <- c(1.715)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
@@ -649,6 +662,7 @@ legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```{r}
 data_t <- c(240);
 data_c <- c(0.43);
+data_c_Sin6000brain <- data_c
 sd <- c(0.147)
 sd.up <- data_c + sd
 sd.dn <- data_c - sd
@@ -867,6 +881,75 @@ tmp.x |> write.table(file="poppred.dat", row.names=T, sep="\t")
 model <- "iHgMiceBW.model"
 input <- "iHgMice_MCMC_setpts.in" 
 mcsim(model = model, input = input, dir = "modeling")
+```
+```{r}
+pred_pop <- fread("poppred.out") |> as.data.frame()
+dim(pred_pop)
+names(pred_pop)
+```
+
+```{r}
+validation_data <- c(
+  data_c_Ntp1993Female1250liver,
+  data_c_Ntp1993Female1250kidney,
+  data_c_Ntp1993Female5000liver,
+  data_c_Ntp1993Female5000kidney,
+  data_c_Ntp1993Female20000liver,
+  data_c_Ntp1993Female20000kidney,
+  data_c_Ntp1993Female20000brain,
+  data_c_Ntp1993Male29550liver,
+  data_c_Ntp1993Male29550kidney,
+  data_c_Ntp1993Male29550brain,
+  data_c_Ntp1993Female29550liver,
+  data_c_Ntp1993Female29550kidney,
+  data_c_Ntp1993Female29550brain,
+  data_c_Sin6000liver,
+  data_c_Sin6000kidney,
+  data_c_Sin6000brain,
+  data_c_Wang10000liver,
+  data_c_Wang10000kidney,
+  data_c_Wang10000brain,
+  data_c_Wang10000blood
+)
+```
+
+```{r}
+str <- which(names(pred_pop)=="CLU_1.1")
+pred_pop_data <- pred_pop[,c(str:dim(pred_pop)[2])]
+organs <- c("Liver", "Liver", "Liver", 
+            "Kidney", "Kidney", "Kidney", 
+            "Liver", "Liver", "Liver", 
+            "Kidney", "Kidney", "Kidney", 
+            "Liver", "Liver", "Liver", 
+            "Kidney", "Kidney", "Kidney", 
+            "Brain", "Brain", "Brain",
+            "Liver", "Kidney", "Brain",
+            "Liver", "Kidney", "Brain",
+            "Liver", "Kidney", "Brain", # Sin
+            "Liver", "Kidney", "Brain", "Blood") # Wang
+study <- c(rep("Ntp 1993", 27), 
+           rep("Sin 1990", 3),
+           rep("Wang 2013", 4))
+dose <- c(rep(c("925 ug/kg", "3695 ug/kg", "14775 ug/kg"), 6),
+          rep("14775 ug/kg", 3),
+          rep("29550 ug/kg", 6),
+          rep("6000 ug/kg", 3),
+          rep("25560 ug/kg", 4))
+
+# check data length
+length(na.omit(validation_data))==dim(pred_pop_data)[2]
+
+reshape2::melt(pred_pop_data) |> mutate(obs = rep(na.omit(validation_data), each=10)) |>
+  mutate(ratio = value / obs) |> select(variable, ratio) |> 
+  mutate(organs = rep(organs, each=10), study= rep(study, each=10), dose=rep(dose, each=10)) |> 
+  unite("label", study:dose) |>
+  ggplot() + 
+  geom_point(aes(x=ratio, y=label)) +
+  scale_x_log10() +
+  facet_grid(~organs) +
+  geom_vline(xintercept = 1, lty=2) +
+  labs(x="Prediction / Observation", y="Study") +
+  theme(strip.background = element_blank())
 ```
 
 
