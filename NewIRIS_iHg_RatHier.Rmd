@@ -23,8 +23,7 @@ output:
 
 # 0 Prerequisites
 ```{r, include=FALSE}
-#source("MCSim/function.R")
-source("function.R")
+source("MCSim/function.R")
 getwd()
 ```
 
@@ -46,6 +45,7 @@ theme_set(theme_bw())
 
 ##### 2.1 Balance check and gavage calculation check --- dynamic body weight change only for rats
 ```{r}
+RMCSim::makemcsim(model = model, dir = "modeling")
 model <- "iHgRatBW.model"
 input <- "iHgRatRothsteinBW.in"
 test <- mcsim(model = model, input = input, dir = "modeling")
@@ -604,7 +604,7 @@ sd.dn <- data_c_Zhang25560_kidney - sd
 plot(data_t, data_c_Zhang25560_kidney, 
      main = "Zhang 2017, SD rats, 25,560 ug/kg", xlab = "Time (hr)", ylab = "CKU (ug/g)", 
      xlim = c(0, 168), ylim = c(1, 1000), log='y')
-arrows(data_t_Zhang25560_kidney, sd.dn, data_t_Zhang25560_kidney, sd.up, code=3, length=0.02, angle=90)
+arrows(data_t, sd.dn, data_t, sd.up, code=3, length=0.02, angle=90)
 lines(Zhang$Time, Zhang$CKU)
 legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 ```
@@ -922,6 +922,14 @@ reshape2::melt(pred_pop_data) |> mutate(obs = rep(na.omit(validation_data), each
   geom_vline(xintercept = 1, lty=2) +
   labs(x="Prediction / Observation", y="Study") +
   theme(strip.background = element_blank())
+```
+
+```{r}
+validation_rat <- reshape2::melt(pred_pop_data) |> mutate(obs = rep(na.omit(validation_data), each=10)) |>
+  mutate(ratio = value / obs) |> select(ratio) |> 
+  mutate(organs = rep(organs, each=10), study= rep(study, each=10), dose=rep(dose, each=10)) |> 
+  unite("label", study:dose) |> mutate(species = "Rat")
+save(validation_rat, file = "validation_rat.RData")
 ```
 
 # Software package

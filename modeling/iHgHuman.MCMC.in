@@ -1,0 +1,171 @@
+#---------------------------------------------
+# iHgHuman.MCMC.in.R----hierarchical structure
+#---------------------------------------------
+Integrate (Lsodes, 1e-9, 1e-11 , 1);
+# cd ./mcsim-6.2.0/IRIS_iHg/modeling/MCMC/HumanHier
+
+MCMC ("MCMC.default.out","", # name of output and restart file
+     "",   # name of data file
+     200000,0,      # iterations, print predictions flag,
+     1,200000,     # printing frequency, iters to print
+     10101010);    # random seed (default )
+
+Level { # # population level
+
+  # Error distributions
+  Distrib (Ve_Aurine , LogUniform , 0.01 , 3.3 );
+  Distrib (Ve_Afeces , LogUniform , 0.01 , 3.3 );
+  # Distrib (Ve_CBldU ,  LogUniform , 0.01 , 3.3 );
+  # Distrib (Ve_CKU ,    LogUniform , 0.01 , 3.3 );
+  # Distrib (Ve_CLU ,    LogUniform , 0.01 , 3.3 );
+  # Distrib (Ve_CBrnU,   LogUniform , 0.01 , 3.3 );
+  
+  Likelihood (Aurine,  LogNormal_v, Prediction (Aurine) , Ve_Aurine);
+  Likelihood (Afeces,  LogNormal_v, Prediction (Afeces) , Ve_Afeces);
+  # Likelihood (CBldU,   LogNormal_v, Prediction (CBldU) ,  Ve_CBldU);
+  # Likelihood (CKU,     LogNormal_v, Prediction (CKU) ,    Ve_CKU);
+  # Likelihood (CLU,     LogNormal_v, Prediction (CLU) ,    Ve_CLU);
+  # Likelihood (CBrnU,   LogNormal_v, Prediction (CBrnU) ,  Ve_CBrnU);   
+  
+  Distrib	(M_lnPLC,	TruncNormal,		2.184, 1.152, -0.119, 4.486); #Based on Young 2001, Carrier 2001 
+  Distrib	(M_lnPKC,	TruncNormal,		3.109, 1.152, 0.806, 5.412); #Based on Young 2001 range 
+  Distrib	(M_lnPBrnC,	TruncNormal,	   0.542, 1.152, -1.76, 2.845); #Based on Young 2001 range
+  Distrib	(M_lnPRestC,	TruncNormal,	   0.086, 1.152, -2.216, 2.389); #Based on Young 2001 range
+  
+  Distrib	(M_lnKabsC,	TruncNormal,		-3.411, 1.498, -6.407, -0.416);
+  Distrib	(M_lnKunabsC,TruncNormal,	  -0.821, 1.498, -3.817, 2.175);
+  Distrib	(M_lnKbileC,	TruncNormal,		-0.4, 1.498, -3.396, 2.595);
+  Distrib	(M_lnKurineC,TruncNormal,		-2.659, 1.498, -5.655, 0.336);
+  Distrib	(M_lnKbrnC,	Uniform,    -6.836, 0.073); 
+  
+  ###### POPULATION VARIANCES
+  
+  Distrib (V_lnPLC,	  HalfNormal, 0.3);
+  Distrib (V_lnPKC,	  HalfNormal, 0.3	);
+  Distrib (V_lnPBrnC,	HalfNormal, 0.3	);
+  Distrib (V_lnPRestC,HalfNormal, 0.3	);
+  
+  Distrib (V_lnKabsC,	  HalfNormal, 0.3	);
+  Distrib (V_lnKunabsC, HalfNormal, 0.3 );
+  Distrib (V_lnKbileC,  HalfNormal, 0.3	);
+  Distrib (V_lnKurineC,	HalfNormal, 0.3	);
+  Distrib (V_lnKbrnC,	  HalfNormal, 0.3	);
+  
+  
+  Level { #Study level
+  Distrib (lnPLC, TruncNormal_v, M_lnPLC, V_lnPLC,             -0.119, 4.486);  
+  Distrib (lnPKC, TruncNormal_v, M_lnPKC, V_lnPKC,              0.806, 5.412);
+  Distrib (lnPBrnC, TruncNormal_v, M_lnPBrnC, V_lnPBrnC,        -1.76, 2.845);   
+  Distrib (lnPRestC, TruncNormal_v, M_lnPRestC, V_lnPRestC,    -2.216, 2.389);  
+   
+  Distrib (lnKabsC, TruncNormal_v, M_lnKabsC, V_lnKabsC,       -6.407, -0.416);
+  Distrib (lnKunabsC, TruncNormal_v, M_lnKunabsC, V_lnKunabsC, -3.817, 2.175);
+  Distrib (lnKbileC, TruncNormal_v, M_lnKbileC, V_lnKbileC,    -3.396, 2.595);
+  Distrib (lnKurineC, TruncNormal_v, M_lnKurineC, V_lnKurineC, -5.655, 0.336);
+  Distrib (lnKbrnC, TruncNormal_v, M_lnKbrnC, V_lnKbrnC,       -6.836, 0.073);
+   
+  Level { # Study 1. Human, , Farris 2008
+    
+   Experiment { # Experiment 1, # Study 1, single IV dose of 0.025 ug Hg/kg/d, Farris 2008
+   
+   BW0 = 70;
+   BWgrowth=0;
+   Growthrate = 0.0;
+   sex=1;
+   TChng 	= 0.003;
+     
+   # oral and IV administration
+   PDose = PerDose(0.0, 24,  0, 0.05);
+   IVDose = PerDose(0.025, 24,  0, 0.003);
+     
+   expowk = PerDose(1.0, 168,  0, 0.003);
+   expodur = PerDose(1.0, 1680, 0, 0.003);
+   Drink = 0.0 ;
+      
+   Print  (Aurine, 24 , 48 , 72 , 96 , 120 , 144 , 168 , 336 , 504 , 672 , 840 , 1008 , 1176 , 1344 , 1512 , 1680);
+   Data  (Aurine, 0.01016 , 0.02318471 , 0.02675159 , 0.03388535 , 0.03923567 , 0.04458599 , 0.04902761 , 0.0929182 , 0.12125111 , 0.16541369 , 0.19404394 , 0.23234815 , 0.26564472 , 0.29066447 , 0.31457481 , 0.34118414);
+      
+   Print  (Afeces ,24 , 48 , 72 , 96 , 120 , 144 , 168 , 336 , 504 , 672 , 840 , 1008 , 1176 , 1344 , 1512 , 1680);
+   Data  (Afeces, 0.05 , 0.08148 , 0.09493671 , 0.10810127 , 0.15063291 , 0.15949367 , 0.1733971 , 0.21359439 , 0.2432366 , 0.27616296 , 0.29439456 , 0.32346864 , 0.34659148 , 0.36122036 , 0.38278073 , 0.40246241);
+      
+
+   ################################################################################
+   
+   # Print (Aurine,  0);
+   # Data  (Aurine, -1);
+   
+   # Print (Afeces,  0);
+   # Data  (Afeces, -1); 
+
+   Print (CBldU,  0);
+   Data  (CBldU, -1);
+   
+   Print (CKU,  0);
+   Data  (CKU, -1);
+   
+   Print (CLU,  0);
+   Data  (CLU, -1);
+   
+   Print (CBrnU,   0);
+   Data  (CBrnU,  -1);
+   
+   } # end of experiment #1, single IV dose of 0.025 ug Hg/kg/d, Farris 2008
+    
+ } # end of Study #1. Human, Farris 2008
+    
+    
+ Level { # Study 2. Human, Rahola, single oral of 0.09375 ug Hg/kg
+
+  Experiment { # Experiment 1, # Study 2, Human, Rahola, single oral of 0.09375 ug Hg/kg
+  
+  BW0 = 64;
+  BWgrowth=0;
+  Growthrate = 0.0;
+  sex=1;
+  TChng 	= 0.05;
+      
+  # oral and IV administration
+  PDose = PerDose(0.09375, 24,  0, 0.05);
+  IVDose = PerDose(0.0 , 24,  0, 0.003);
+      
+  expowk =  PerDose(1.0, 168,  0, 0.05);
+  expodur = PerDose(1.0, 1850, 0, 0.05);
+  Drink = 0.0 ;
+  
+
+  Print  (Afeces ,24 , 48 , 72 , 96 , 144 , 192 , 240 , 288 , 336 , 384 , 408 , 432 , 456 , 528 , 672 , 720 , 1224 , 1248 , 1272);
+  Data (Afeces, 1.477809 , 3.470468 , 4.724273 , 5.272337 , 5.665805 , 5.774183 , 5.811173 , 5.826059 , 5.835748 , 5.842266 , 5.847794 , 5.855498 , 5.859217 , 5.863198 , 5.864334 , 5.865867 , 5.866668 , 5.867613 , 5.868693);
+      
+  Print  (Aurine, 24 , 48 , 72 , 96 , 144 , 192 , 240 , 288 , 336 , 384 , 408 , 432 , 456 , 528 , 672 , 720 , 1224 , 1248 , 1272 , 1824 , 1848);
+  Data  (Aurine, 0.001754597 , 0.004511698 , 0.006563485 , 0.008784912 , 0.012570932 , 0.016304637 , 0.020405739 , 0.022484365 , 0.028068776 , 0.030784725 , 0.035378559 , 0.042058603 , 0.045490943 , 0.050140927 , 0.056225823 , 0.063441201 , 0.064927833 , 0.067125743 , 0.068868326 , 0.076238348 , 0.076842953);
+ 
+      ################################################################################   
+
+   # Print (Aurine,  0);
+   # Data  (Aurine, -1);
+   
+   # Print (Afeces,  0);
+   # Data  (Afeces, -1); 
+
+   Print (CBldU,  0);
+   Data  (CBldU, -1);
+   
+   Print (CKU,  0);
+   Data  (CKU, -1);
+   
+   Print (CLU,  0);
+   Data  (CLU, -1);
+   
+   Print (CBrnU,   0);
+   Data  (CBrnU,  -1);     
+
+ 
+  } # end of experiment #1, Study #2. Human, Rahola, single oral of 0.09375 ug Hg/kg
+    
+ } # end of Study #2. Human, Rahola, single oral of 0.09375 ug Hg/kg
+
+} # end of study level
+
+} # Population level
+  
+End. 

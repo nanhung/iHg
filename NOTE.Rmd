@@ -4,8 +4,12 @@ output: html_notebook
 ---
 
 11/13
+- Human validation (done)
+- Suzuki not in human data?
+- Yoshida data blood for validation (Table 1)?
 - Mice validation (done)
 
 11/9
 - iHgMiceNielsenBW.in (add CBrnU, not used in calibration; L18)
 - Havarinasab not include?
+

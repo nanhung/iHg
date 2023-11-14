@@ -12,7 +12,6 @@ output:
   fig_caption: yes  
 ---
 
-
 ```{r setup, include=FALSE}
 #knitr::opts_chunk$set(echo = TRUE)
 #setwd('..')
@@ -952,6 +951,13 @@ reshape2::melt(pred_pop_data) |> mutate(obs = rep(na.omit(validation_data), each
   theme(strip.background = element_blank())
 ```
 
+```{r}
+validation_mice <- reshape2::melt(pred_pop_data) |> mutate(obs = rep(na.omit(validation_data), each=10)) |>
+  mutate(ratio = value / obs) |> select(ratio) |> 
+  mutate(organs = rep(organs, each=10), study= rep(study, each=10), dose=rep(dose, each=10)) |> 
+  unite("label", study:dose) |> mutate(species = "Mice")
+save(validation_mice, file = "validation_mice.RData")
+```
 
 # Software package
 # Check the software package version that will be used in this 
