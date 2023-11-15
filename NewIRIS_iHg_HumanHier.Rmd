@@ -323,7 +323,8 @@ mcmc_out <- x[j, , pars]
 l <- dim(mcmc_out)[1] * dim(mcmc_out)[2]
 dim(mcmc_out) <- c(l, length(pars))
 colnames(mcmc_out) <- pars
-i <- sample(dim(mcmc_out)[1], 10) # random select 10 draws
+sample_no <- 50
+i <- sample(dim(mcmc_out)[1], sample_no) # random select 10 draws
 tmp.x <- mcmc_out[i, pars] 
 tmp.x |> write.table(file="poppred.dat", row.names=T, sep="\t")
 model <- "iHgHumanBW.model"
@@ -345,10 +346,14 @@ study <- "Yoshida"
 dose <- "13750 ug/kg"
 
 # check data length
-reshape2::melt(pred_pop_data) |> mutate(obs = rep(na.omit(validation_data), each=10)) |>
+
+reshape2::melt(pred_pop_data) |> mutate(obs = rep(na.omit(validation_data), each=sample_no)) |>
   mutate(ratio = value / obs) |> select(ratio) |> 
-  mutate(organs = rep(organs, 10), study= rep(study, 10), dose=rep(dose, 10)) |> 
+  mutate(organs = rep(organs, sample_no), study= rep(study, sample_no), dose=rep(dose, sample_no)) |>
+  mutate(acceptance = ifelse(ratio > 3, 0, ifelse(ratio < 0.33, 0, 1))) |>
+  mutate(accept_rate = sum(acceptance)/sample_no) |>
   unite("label", study:dose) |>
+  mutate(species = "Human") |>
   ggplot() + 
   geom_point(aes(x=ratio, y=label)) +
   scale_x_log10() +
@@ -359,9 +364,11 @@ reshape2::melt(pred_pop_data) |> mutate(obs = rep(na.omit(validation_data), each
 ```
 
 ```{r}
-validation_human <- reshape2::melt(pred_pop_data) |> mutate(obs = rep(na.omit(validation_data), each=10)) |>
+validation_human <- reshape2::melt(pred_pop_data) |> mutate(obs = rep(na.omit(validation_data), each=sample_no)) |>
   mutate(ratio = value / obs) |> select(ratio) |> 
-  mutate(organs = rep(organs, 10), study= rep(study, 10), dose=rep(dose, 10)) |> 
+  mutate(organs = rep(organs, sample_no), study= rep(study, sample_no), dose=rep(dose, sample_no)) |>
+  mutate(acceptance = ifelse(ratio > 3, 0, ifelse(ratio < 0.33, 0, 1))) |>
+  mutate(accept_rate = sum(acceptance)/sample_no) |>
   unite("label", study:dose) |> mutate(species = "Human")
 save(validation_human, file = "validation_human.RData")
 ```

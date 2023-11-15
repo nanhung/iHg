@@ -45,9 +45,9 @@ theme_set(theme_bw())
 
 ##### 2.1 Balance check and gavage calculation check --- dynamic body weight change only for rats
 ```{r}
-RMCSim::makemcsim(model = model, dir = "modeling")
 model <- "iHgRatBW.model"
 input <- "iHgRatRothsteinBW.in"
+RMCSim::makemcsim(model = model, dir = "modeling")
 test <- mcsim(model = model, input = input, dir = "modeling")
 testex <- readsims(test,  exp=1) 
 plot (testex$Time, testex$BalanceCheck, xlim = c(0, 2200), ylim = c(-0.000001, 0.000001),  type="l", lwd=2, xlab="Time", ylab="mass balance")
@@ -852,7 +852,8 @@ mcmc_out <- x[j, , pars]
 l <- dim(mcmc_out)[1] * dim(mcmc_out)[2]
 dim(mcmc_out) <- c(l, length(pars))
 colnames(mcmc_out) <- pars
-i <- sample(dim(mcmc_out)[1], 10) # random select 10 draws
+sample_no <- 50
+i <- sample(dim(mcmc_out)[1], sample_no) # random select 10 draws
 tmp.x <- mcmc_out[i, pars] 
 tmp.x |> write.table(file="poppred.dat", row.names=T, sep="\t")
 model <- "iHgRatBW.model"
@@ -911,10 +912,13 @@ dose <- c(rep(c("230 ug/kg", "925 ug/kg", "3695 ug/kg"), 6),
 # check data length
 length(na.omit(validation_data))==dim(pred_pop_data)[2]
 
-reshape2::melt(pred_pop_data) |> mutate(obs = rep(na.omit(validation_data), each=10)) |>
+reshape2::melt(pred_pop_data) |> mutate(obs = rep(na.omit(validation_data), each=sample_no)) |>
   mutate(ratio = value / obs) |> select(variable, ratio) |> 
-  mutate(organs = rep(organs, each=10), study= rep(study, each=10), dose=rep(dose, each=10)) |> 
+  mutate(organs = rep(organs, each=sample_no), study= rep(study, each=sample_no), dose=rep(dose, each=sample_no)) |> 
   unite("label", study:dose) |>
+  mutate(acceptance = ifelse(ratio > 3, 0, ifelse(ratio < 0.33, 0, 1))) |>
+  group_by(label) |>
+  mutate(accept_rate = sum(acceptance)/n()) |>
   ggplot() + 
   geom_point(aes(x=ratio, y=label)) +
   scale_x_log10() +
@@ -925,10 +929,16 @@ reshape2::melt(pred_pop_data) |> mutate(obs = rep(na.omit(validation_data), each
 ```
 
 ```{r}
-validation_rat <- reshape2::melt(pred_pop_data) |> mutate(obs = rep(na.omit(validation_data), each=10)) |>
-  mutate(ratio = value / obs) |> select(ratio) |> 
-  mutate(organs = rep(organs, each=10), study= rep(study, each=10), dose=rep(dose, each=10)) |> 
-  unite("label", study:dose) |> mutate(species = "Rat")
+validation_rat <- reshape2::melt(pred_pop_data) |> 
+  mutate(obs = rep(na.omit(validation_data), each=sample_no)) |>
+  mutate(ratio = value / obs) |> select(variable, ratio) |> 
+  mutate(organs = rep(organs, each=sample_no), study= rep(study, each=sample_no), dose=rep(dose, each=sample_no)) |> 
+  unite("label", study:dose) |>
+  mutate(acceptance = ifelse(ratio > 3, 0, ifelse(ratio < 0.33, 0, 1))) |>
+  mutate(species = "Rat") |> 
+  group_by(species, organs) |>
+  mutate(accept_rate = sum(acceptance)/n()) 
+validation_rat |> distinct(species, organs, accept_rate) 
 save(validation_rat, file = "validation_rat.RData")
 ```
 
