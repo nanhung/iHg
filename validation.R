@@ -2,6 +2,9 @@ load("validation_rat.RData")
 load("validation_mice.RData")
 load("validation_human.RData")
 
+library(ggplot2)
+library(dplyr)
+
 rate_text <- do.call(rbind, list(validation_rat, validation_mice, validation_human)) |>
   select(species, organs, accept_rate) |> distinct(species, organs, accept_rate) 
 
