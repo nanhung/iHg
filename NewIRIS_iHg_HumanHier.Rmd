@@ -195,7 +195,7 @@ dim(single_1)
 ## Result diagnosis ##
 # Trace plot
 ```{r}
-str <- ceiling(nrow(single_1)/2) + 1
+str <- 150000
 end <- nrow(single_1)
 j <- c(str:end) # discard burn-in
 par(mfrow = c(3,4), mar = c(2,2,2,1))
@@ -215,14 +215,16 @@ for (i in 2:dim(single_1)[2]){
 # Density plot
 ```{r}
 par(mfrow = c(3,4), mar = c(2,2,2,1))
-for (i in 2:dim(single_1)[2]){
-  single_1[j,i] %>% density() %>% plot(type = "l", main = names(single_1)[i])
+for (i in 2:42){
+  single_1[j,i] |> density() |> plot(type = "l", main = names(single_1)[i])
 }
 ```
 
 # Correlation matrix
 ```{r}
-single_1[,4:12] %>% cor() %>% corrplot(method = "number")
+single_1[j,4:12] |> cor() |> corrplot::corrplot(method = "number")
+single_1[j,22:30] |> cor() |> corrplot::corrplot(method = "number")
+single_1[j,31:39] |> cor() |> corrplot::corrplot(method = "number")
 ```
 
 # Global evaluation/ "MCMC.check.out" has "Data" and "Predicion"
@@ -271,10 +273,10 @@ ggplot(aes(x = Time, y = Data)) +
 ### Using Ubuntu instead ###
 
 ```{r, eval=F}
-Humanjob1 <- fread("outputs/iHgHuman_4880.out") |> data.frame()
-Humanjob2 <- fread("outputs/iHgHuman_3365.out") |> data.frame()
-Humanjob3 <- fread("outputs/iHgHuman_5916.out") |> data.frame()
-Humanjob4 <- fread("outputs/iHgHuman_6734.out") |> data.frame()
+Humanjob1 <- data.table::fread("outputs/iHgHuman_4880.out") |> data.frame()
+Humanjob2 <- data.table::fread("outputs/iHgHuman_3365.out") |> data.frame()
+Humanjob3 <- data.table::fread("outputs/iHgHuman_5916.out") |> data.frame()
+Humanjob4 <- data.table::fread("outputs/iHgHuman_6734.out") |> data.frame()
 x <- mcmc_array(data = list(Humanjob1, Humanjob2, Humanjob3, Humanjob4))
 str <- ceiling(nrow(x)/2) + 1
 end <- nrow(x)
@@ -288,11 +290,12 @@ dim(x)
 ```
 # traceplot and density diagnosis
 ```{r}
-pars_Error <- c("Ve_Aurine.1.",	"Ve_Afeces.1.",	"Ve_CBldU.1.",	"Ve_CKU.1.",	"Ve_CLU.1.",	"Ve_CBrnU.1.")
+pars_Error <- c("Ve_Aurine.1.",	"Ve_Afeces.1.")
             
 pars_Pop <- c("M_lnPLC.1.", "M_lnPKC.1.", "M_lnPBrnC.1.",	"M_lnPRestC.1.",	"M_lnKabsC.1.",	"M_lnKunabsC.1.",	"M_lnKbileC.1.",	"M_lnKurineC.1.",	"M_lnKbrnC.1.")
 
-pars_Study <- c("lnPLC.1.1.", "lnPKC.1.1.", "lnPBrnC.1.1.",	"lnPRestC.1.1.",	"lnKabsC.1.1.",	"lnKunabsC.1.1.",	"lnKbileC.1.1.",	"lnKurineC.1.1.",	"lnKbrnC.1.1.", "lnPLC.1.2.", "lnPKC.1.2.", "lnPBrnC.1.2.",	"lnPRestC.1.2.",	"lnKabsC.1.2.",	"lnKunabsC.1.2.",	"lnKbileC.1.2.",	"lnKurineC.1.2.",	"lnKbrnC.1.2.")
+pars_Study <- c("lnPLC.1.1.", "lnPKC.1.1.", "lnPBrnC.1.1.",	"lnPRestC.1.1.",	"lnKabsC.1.1.",	"lnKunabsC.1.1.",	"lnKbileC.1.1.",	"lnKurineC.1.1.",	"lnKbrnC.1.1.", 
+                "lnPLC.1.2.", "lnPKC.1.2.", "lnPBrnC.1.2.",	"lnPRestC.1.2.",	"lnKabsC.1.2.",	"lnKunabsC.1.2.",	"lnKbileC.1.2.",	"lnKurineC.1.2.",	"lnKbrnC.1.2.")
 
 pars_Dist <- c("LnPrior",	"LnPosterior",	"LnData")
 
@@ -309,7 +312,7 @@ mcmc_trace(x[j,,], pars = pars_Dist)
 
 # Andrew Gelman Scale Reduction Factor
 ```{r}
-monitor(x, digits = 4)
+stan_report <- rstan::monitor(x[,,-1], warmup = 150000, digits = 4)
 ```
 
 
