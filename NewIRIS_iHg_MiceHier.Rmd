@@ -818,8 +818,8 @@ x <- x[sample_x,,]
 # Size of output summary
 ```{r}
 dim(x)
-# X [iteration, chain, parameter]
-tail(x[,1,])
+mcmc_mice <- x
+save(mcmc_mice, file = "mcmc_mice.RData")
 ```
 
 # traceplot and density diagnosis

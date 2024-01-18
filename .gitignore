@@ -4,3 +4,6 @@
 .Ruserdata
 outputs
 .DS_Store
+mcmc_rat.RData
+mcmc_mice.RData
+mcmc_human.RData

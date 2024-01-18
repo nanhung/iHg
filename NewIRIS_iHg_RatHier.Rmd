@@ -801,8 +801,8 @@ x <- x[sample_x,,]
 # Size of output summary
 ```{r}
 dim(x)
-# X [iteration, chain, parameter]
-tail(x[,1,])
+mcmc_rat <- x
+save(mcmc_rat, file = "mcmc_rat.RData")
 ```
 
 # Andrew Gelman Scale Reduction Factor

@@ -283,7 +283,8 @@ j <- c(str:end) # discard burn-in
 # Size of output summary
 ```{r}
 dim(x)
-# X [iteration, chain, parameter]
+mcmc_human <- x
+save(mcmc_human, file = "mcmc_human.RData")
 ```
 # traceplot and density diagnosis
 ```{r}
