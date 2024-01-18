@@ -688,10 +688,6 @@ tail(single_1)
 # Single chain check
 # Checking model fit using one single chain #
 # Global evaluation/ "MCMC.check.out" has "Data" and "Predicion"
-```{r}
-single_1 <- read.delim("C:/Users/ysl02/mcsim-6.2.0/IRIS_iHg/modeling/MiceHier/iHgMice_4880.out")
-tail(single_1)
-```
 
 ## Result diagnosis ##
 # Trace plot
@@ -815,12 +811,15 @@ x <- mcmc_array(data = list(Micejob1, Micejob2, Micejob3, Micejob4))
 str <- ceiling(nrow(x)/2) + 1
 end <- nrow(x)
 j <- c(str:end) # discard burn-in
+sample_x <- seq(50000, 100000, 10) + 1
+x <- x[sample_x,,]
 ```
 
 # Size of output summary
 ```{r}
 dim(x)
 # X [iteration, chain, parameter]
+tail(x[,1,])
 ```
 
 # traceplot and density diagnosis
@@ -833,15 +832,22 @@ pars_Study <- c("lnPLC(1.1)", "lnPKC(1.1)", "lnPBrnC(1.1)",	"lnPRestC(1.1)",	"ln
 
 pars_Dist <- c("LnPrior",	"LnPosterior",	"LnData")
 
-bayesplot::mcmc_dens_overlay(x[j,,],  pars = pars_Error)
-bayesplot::mcmc_dens_overlay(x[j,,],  pars = pars_Pop)
-bayesplot::mcmc_dens_overlay(x[j,,],  pars = pars_Study)
-bayesplot::mcmc_dens_overlay(x[j,,],  pars = pars_Dist)
+stan_report_error <- rstan::monitor(x[,,pars_Error], warmup = 0, digits = 4)
+stan_report_pop <- rstan::monitor(x[,,pars_Pop], warmup = 0, digits = 4)
+stan_report_Study <- rstan::monitor(x[,,pars_Study], warmup = 0, digits = 4)
+stan_report_Dist <- rstan::monitor(x[,,pars_Study], warmup = 0, digits = 4)
+```
 
-bayesplot::mcmc_trace(x[j,,], pars = pars_Error)
-bayesplot::mcmc_trace(x[j,,], pars = pars_Pop)
-bayesplot::mcmc_trace(x[j,,], pars = pars_Study)
-bayesplot::mcmc_trace(x[j,,], pars = pars_Dist)
+```{r}
+bayesplot::mcmc_dens_overlay(x[,,],  pars = pars_Error)
+bayesplot::mcmc_dens_overlay(x[,,],  pars = pars_Pop)
+bayesplot::mcmc_dens_overlay(x[,,],  pars = pars_Study)
+bayesplot::mcmc_dens_overlay(x[,,],  pars = pars_Dist)
+
+bayesplot::mcmc_trace(x[,,], pars = pars_Error)
+bayesplot::mcmc_trace(x[,,], pars = pars_Pop)
+bayesplot::mcmc_trace(x[,,], pars = pars_Study)
+bayesplot::mcmc_trace(x[,,], pars = pars_Dist)
 ```
 
 # Andrew Gelman Scale Reduction Factor

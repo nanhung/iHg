@@ -195,12 +195,9 @@ dim(single_1)
 ## Result diagnosis ##
 # Trace plot
 ```{r}
-str <- 150000
-end <- nrow(single_1)
-j <- c(str:end) # discard burn-in
 par(mfrow = c(3,4), mar = c(2,2,2,1))
 for (i in 2:dim(single_1)[2]){
-  plot(single_1[j,1], single_1[j,i], type = "l", main = names(single_1)[i])
+  plot(single_1[-1,1], single_1[-1,i], type = "l", main = names(single_1)[i])
 }
 ```
 
@@ -208,7 +205,7 @@ for (i in 2:dim(single_1)[2]){
 ```{r}
 par(mfrow = c(3,4), mar = c(2,2,4,1))
 for (i in 2:dim(single_1)[2]){
-  acf(single_1[j,i], main = names(single_1)[i])
+  acf(single_1[-1,i], main = names(single_1)[i])
 }
 ```
 
@@ -216,15 +213,15 @@ for (i in 2:dim(single_1)[2]){
 ```{r}
 par(mfrow = c(3,4), mar = c(2,2,2,1))
 for (i in 2:42){
-  single_1[j,i] |> density() |> plot(type = "l", main = names(single_1)[i])
+  single_1[-1,i] |> density() |> plot(type = "l", main = names(single_1)[i])
 }
 ```
 
 # Correlation matrix
 ```{r}
-single_1[j,4:12] |> cor() |> corrplot::corrplot(method = "number")
-single_1[j,22:30] |> cor() |> corrplot::corrplot(method = "number")
-single_1[j,31:39] |> cor() |> corrplot::corrplot(method = "number")
+single_1[-1,4:12] |> cor() |> corrplot::corrplot(method = "number")
+single_1[-1,22:30] |> cor() |> corrplot::corrplot(method = "number")
+single_1[-1,31:39] |> cor() |> corrplot::corrplot(method = "number")
 ```
 
 # Global evaluation/ "MCMC.check.out" has "Data" and "Predicion"
@@ -312,7 +309,7 @@ mcmc_trace(x[j,,], pars = pars_Dist)
 
 # Andrew Gelman Scale Reduction Factor
 ```{r}
-stan_report <- rstan::monitor(x[,,-1], warmup = 150000, digits = 4)
+stan_report <- rstan::monitor(x[,,-1], warmup = 1, digits = 4)
 ```
 
 

@@ -657,6 +657,7 @@ dim(x)
 # Global evaluation/ "MCMC.check.out" has "Data" and "Predicion"
 ```{r}
 single_1 <- fread("outputs/iHgRat_3365.out") |> as.data.frame()
+head(single_1)
 tail(single_1)
 ```
 
@@ -692,12 +693,13 @@ for (i in 2:52){
 # Correlation matrix
 ```{r}
 single_1[,8:16] %>% cor() %>% corrplot(method = "number")
+single_1[,26:34] %>% cor() %>% corrplot(method = "number")
 ```
 
 # Global evaluation/ "MCMC.check.out" has "Data" and "Predicion"
 # Check simulation result with the parameter from the last iteration
 ```{r}
-chk_1 <- read.delim("outputs/iHgRat_check_6734.out")
+chk_1 <- read.delim("outputs/iHgRat_check_3365.out")
 chk_1 <- chk_1[which(chk_1$Data>0),]
 tail(chk_1)
 ```
@@ -792,40 +794,56 @@ x <- mcmc_array(data = list(Ratjob1, Ratjob2, Ratjob3, Ratjob4))
 str <- ceiling(nrow(x)/2) + 1
 end <- nrow(x)
 j <- c(str:end) # discard burn-in
+sample_x <- seq(50000, 100000, 10) + 1
+x <- x[sample_x,,]
 ```
 
 # Size of output summary
 ```{r}
 dim(x)
 # X [iteration, chain, parameter]
+tail(x[,1,])
 ```
-# traceplot and density diagnosis
+
+# Andrew Gelman Scale Reduction Factor
 ```{r}
-colnames(x[,1,])
+#monitor(x[j, , pars_Pop])
 pars_Error <- c("Ve_Aurine(1)",	"Ve_Afeces(1)",	"Ve_CBldU(1)",	"Ve_CKU(1)",	"Ve_CLU(1)",	"Ve_CBrnU(1)")
             
 pars_Pop <- c("M_lnPLC(1)", "M_lnPKC(1)", "M_lnPBrnC(1)",	"M_lnPRestC(1)",	"M_lnKabsC(1)",	"M_lnKunabsC(1)",	
               "M_lnKbileC(1)",	"M_lnKurineC(1)",	"M_lnKbrnC(1)")
 
-pars_Study <- c("lnPLC(1.1)", "lnPKC(1.1)", "lnPBrnC(1.1)",	"lnPRestC(1.1)",	"lnKabsC(1.1)",	"lnKunabsC(1.1)",	"lnKbileC(1.1)",	"lnKurineC(1.1)",	"lnKbrnC(1.1)", "lnPLC(1.2)", "lnPKC(1.2)", "lnPBrnC(1.2)",	"lnPRestC(1.2)",	"lnKabsC(1.2)",	"lnKunabsC(1.2)",	"lnKbileC(1.2)",	"lnKurineC(1.2)",	"lnKbrnC(1.2)", "lnPLC(1.3)", "lnPKC(1.3)", "lnPBrnC(1.3)",	"lnPRestC(1.3)",	"lnKabsC(1.3)",	"lnKunabsC(1.3)",	"lnKbileC(1.3)",	"lnKurineC(1.3)",	"lnKbrnC(1.3)")
+pars_Study <- c("lnPLC(1.1)", "lnPKC(1.1)", "lnPBrnC(1.1)",	"lnPRestC(1.1)",	"lnKabsC(1.1)",
+                "lnKunabsC(1.1)",	"lnKbileC(1.1)",	"lnKurineC(1.1)",	"lnKbrnC(1.1)", "lnPLC(1.2)",
+                "lnPKC(1.2)", "lnPBrnC(1.2)",	"lnPRestC(1.2)",	"lnKabsC(1.2)",	"lnKunabsC(1.2)",
+                "lnKbileC(1.2)",	"lnKurineC(1.2)",	"lnKbrnC(1.2)", "lnPLC(1.3)", "lnPKC(1.3)",
+                "lnPBrnC(1.3)",	"lnPRestC(1.3)",	"lnKabsC(1.3)",	"lnKunabsC(1.3)",	"lnKbileC(1.3)",
+                "lnKurineC(1.3)",	"lnKbrnC(1.3)", 
+                "lnPLC(1.4)", "lnPKC(1.4)", "lnPBrnC(1.4)",	"lnPRestC(1.4)",	"lnKabsC(1.4)",
+                "lnKunabsC(1.4)",	"lnKbileC(1.4)", "lnKurineC(1.4)",	"lnKbrnC(1.4)"
+                )
 
 pars_Dist <- c("LnPrior",	"LnPosterior",	"LnData")
 
-mcmc_dens_overlay(x[j,,],  pars = pars_Error)
-mcmc_dens_overlay(x[j,,],  pars = pars_Pop)
-mcmc_dens_overlay(x[j,,],  pars = pars_Study)
-mcmc_dens_overlay(x[j,,],  pars = pars_Dist)
-
-mcmc_trace(x[j,,], pars = pars_Error)
-mcmc_trace(x[j,,], pars = pars_Pop)
-mcmc_trace(x[j,,], pars = pars_Study)
-mcmc_trace(x[j,,], pars = pars_Dist)
+stan_report_error <- rstan::monitor(x[,,pars_Error], warmup = 0, digits = 4)
+stan_report_pop <- rstan::monitor(x[,,pars_Pop], warmup = 0, digits = 4)
+stan_report_Study <- rstan::monitor(x[,,pars_Study], warmup = 0,digits = 4)
 ```
 
-# Andrew Gelman Scale Reduction Factor
+
+# traceplot and density diagnosis
 ```{r}
-monitor(x[j, , pars_Pop])
+mcmc_dens_overlay(x[,,],  pars = pars_Error)
+mcmc_dens_overlay(x[,,],  pars = pars_Pop)
+mcmc_dens_overlay(x[,,],  pars = pars_Study)
+mcmc_dens_overlay(x[,,],  pars = pars_Dist)
+
+mcmc_trace(x[,,], pars = pars_Error)
+mcmc_trace(x[,,], pars = pars_Pop)
+mcmc_trace(x[,,], pars = pars_Study)
+mcmc_trace(x[,,], pars = pars_Dist)
 ```
+
 
 # MPSRF
 ```{r}
