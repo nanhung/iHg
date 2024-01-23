@@ -2,7 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
-outputs
+outputs/*.out
 .DS_Store
 mcmc_rat.RData
 mcmc_mice.RData
