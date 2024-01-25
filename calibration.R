@@ -5,7 +5,7 @@ out <- c("outputs/iHgRat_3365.out",
          "outputs/iHgRat_4880.out",
          "outputs/iHgRat_5916.out",
          "outputs/iHgRat_6734.out")
-data <- out |> map(fread) |> map(as.data.frame) 
+data <- out |> map(fread) |> map(as.data.frame)
 n_chains <- length(data)
 sample_number <- dim(data[[1]])[1]
 dim <- c(sample_number, n_chains, dim(data[[1]])[2])
@@ -18,13 +18,14 @@ for (i in 1:n_chains) {
 dimnames(x)[[3]] <- names(data[[1]])
 dim(x)
 
-x[seq(50001, 100001, 10), ,-1] |> monitor()
+x[seq(50001, 100001, 10), , -1] |> monitor()
 
-iHgRat_mcmc <- x[seq(50001, 100001, 10), ,]
-save(iHgRat_mcmc, file = "iHgMice_mcmc.RData")
+rat_mcmc <- x[seq(50001, 100001, 10), , ]
+save(rat_mcmc, file = "iHgMice_mcmc.RData")
 
 load("outputs/iHgMice_mcmc.Rdata")
 no_sample <- 10
+seq_len(iHgMice_mcmc[])
 sample_iters <- sample(1:dim(iHgMice_mcmc)[1], no_sample)
 sample_iHgMice_mcmc <- iHgMice_mcmc[sample_iters, ,]
 nd2 <- dim(sample_iHgMice_mcmc)[3]
@@ -38,7 +39,7 @@ for(iter in seq(dim(sample_iHgMice_mcmc)[1])){
   RMCSim::mcsim(model = model, input = input, dir = "modeling")
   out <- read.delim("MCMC.check.out")
   out$iter <- iter
-  if (iter==1) X <- out
+  if (iter == 1) X <- out
     else X <- rbind(X, out)
 }
 X |> tail()
