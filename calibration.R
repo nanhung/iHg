@@ -1,6 +1,32 @@
+#
 library(data.table)
 library(purrr)
 library(rstan)
+
+#
+out <- c("outputs/iHgMice_3365.out",
+         "outputs/iHgMice_4880.out",
+         "outputs/iHgMice_5916.out",
+         "outputs/iHgMice_6734.out")
+data <- out |> map(fread) |> map(as.data.frame)
+n_chains <- length(data)
+sample_number <- dim(data[[1]])[1]
+dim <- c(sample_number, n_chains, dim(data[[1]])[2])
+n_iter <- dim(data[[1]])[1]
+n_param <- dim(data[[1]])[2]
+x <- array(sample_number:(n_iter * n_chains * n_param), dim = dim)
+for (i in 1:n_chains) {
+  x[, i, ] <- as.matrix(data[[i]][1:n_iter, ])
+}
+dimnames(x)[[3]] <- names(data[[1]])
+dim(x)
+
+x[seq(50001, 100001, 10), , -1] |> monitor(warmup = 0)
+
+mice_mcmc <- x[seq(50001, 100001, 10), , ]
+save(mice_mcmc, file = "outputs/iHgMice_mcmc.RData")
+
+#
 out <- c("outputs/iHgRat_3365.out",
          "outputs/iHgRat_4880.out",
          "outputs/iHgRat_5916.out",
@@ -18,10 +44,38 @@ for (i in 1:n_chains) {
 dimnames(x)[[3]] <- names(data[[1]])
 dim(x)
 
-x[seq(50001, 100001, 10), , -1] |> monitor()
+x[seq(50001, 100001, 10), , -1] |> monitor(warmup = 0)
 
 rat_mcmc <- x[seq(50001, 100001, 10), , ]
-save(rat_mcmc, file = "iHgMice_mcmc.RData")
+save(rat_mcmc, file = "outputs/iHgRat_mcmc.RData")
+
+#
+out <- c("outputs/iHgHuman_3365.out",
+         "outputs/iHgHuman_4880.out",
+         "outputs/iHgHuman_5916.out",
+         "outputs/iHgHuman_6734.out")
+data <- out |> map(fread) |> map(as.data.frame)
+n_chains <- length(data)
+sample_number <- dim(data[[1]])[1]
+dim <- c(sample_number, n_chains, dim(data[[1]])[2])
+n_iter <- dim(data[[1]])[1]
+n_param <- dim(data[[1]])[2]
+x <- array(sample_number:(n_iter * n_chains * n_param), dim = dim)
+for (i in 1:n_chains) {
+  x[, i, ] <- as.matrix(data[[i]][1:n_iter, ])
+}
+dimnames(x)[[3]] <- names(data[[1]])
+dim(x)
+
+x[, , -1] |> monitor()
+
+mice_mcmc <- x[seq(50001, 100001, 10), , ]
+save(mice_mcmc, file = "outputs/iHgHuman_mcmc.RData")
+
+
+
+
+
 
 load("outputs/iHgMice_mcmc.Rdata")
 no_sample <- 10
