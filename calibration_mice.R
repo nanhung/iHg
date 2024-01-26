@@ -1,4 +1,4 @@
-#
+# packages
 library(data.table)
 library(purrr)
 library(rstan)
@@ -7,23 +7,7 @@ library(dplyr)
 library(cowplot)
 library(scales)
 
-#
-set_theme <- theme(
-  axis.text.y      = element_text(color = "black"),
-  axis.ticks.y     = element_line(color = "black"),
-  axis.text.x      = element_text(color = "black"),
-  axis.ticks.x     = element_line(color = "black"),
-  axis.line.x      = element_line(color = "black"),
-  axis.line.y      = element_line(color = "black"),
-  legend.key       = element_blank(),
-  axis.title       = element_blank(),
-  #panel.grid.major = element_blank(),
-  #panel.grid.minor = element_blank(),
-  #panel.border     = element_blank(),
-  panel.background = element_blank()
-  )
-
-#
+# posterior check
 out <- c("outputs/iHgMice_3365.out",
   "outputs/iHgMice_4880.out",
   "outputs/iHgMice_5916.out",
@@ -40,62 +24,16 @@ for (i in 1:n_chains) {
 }
 dimnames(x)[[3]] <- names(data[[1]])
 dim(x)
-
 x[seq(50001, 100001, 10), , -1] |> monitor(warmup = 0)
 
+# Save to RData
 mice_mcmc <- x[seq(50001, 100001, 10), , ]
 save(mice_mcmc, file = "outputs/iHgMice_mcmc.RData")
 
-#
-out <- c("outputs/iHgRat_3365.out",
-  "outputs/iHgRat_4880.out",
-  "outputs/iHgRat_5916.out",
-  "outputs/iHgRat_6734.out")
-data <- out |> map(fread) |> map(as.data.frame)
-n_chains <- length(data)
-sample_number <- dim(data[[1]])[1]
-dim <- c(sample_number, n_chains, dim(data[[1]])[2])
-n_iter <- dim(data[[1]])[1]
-n_param <- dim(data[[1]])[2]
-x <- array(sample_number:(n_iter * n_chains * n_param), dim = dim)
-for (i in 1:n_chains) {
-  x[, i, ] <- as.matrix(data[[i]][1:n_iter, ])
-}
-dimnames(x)[[3]] <- names(data[[1]])
-dim(x)
-
-x[seq(50001, 100001, 10), , -1] |> monitor(warmup = 0)
-
-rat_mcmc <- x[seq(50001, 100001, 10), , ]
-save(rat_mcmc, file = "outputs/iHgRat_mcmc.RData")
-
-#
-out <- c("outputs/iHgHuman_3365.out",
-  "outputs/iHgHuman_4880.out",
-  "outputs/iHgHuman_5916.out",
-  "outputs/iHgHuman_6734.out")
-data <- out |> map(fread) |> map(as.data.frame)
-n_chains <- length(data)
-sample_number <- dim(data[[1]])[1]
-dim <- c(sample_number, n_chains, dim(data[[1]])[2])
-n_iter <- dim(data[[1]])[1]
-n_param <- dim(data[[1]])[2]
-x <- array(sample_number:(n_iter * n_chains * n_param), dim = dim)
-for (i in 1:n_chains) {
-  x[, i, ] <- as.matrix(data[[i]][1:n_iter, ])
-}
-dimnames(x)[[3]] <- names(data[[1]])
-dim(x)
-
-x[, , -1] |> monitor(warmup = 0)
-
-human_mcmc <- x
-save(human_mcmc, file = "outputs/iHgHuman_mcmc.RData")
-
-#
+# tidy
 rm(list = ls())
 
-#
+# data manipulate (randon sample 20 iters from 4 chains)
 load("outputs/iHgMice_mcmc.Rdata")
 no_sample <- 20
 sample_iters <- sample(seq_len(dim(mice_mcmc)[1]), no_sample)
@@ -104,6 +42,7 @@ nd2 <- dim(sample_mice_mcmc)[3]
 dim(sample_mice_mcmc) <- c(4 * no_sample, nd2)
 dim(sample_mice_mcmc)
 
+# posterior predictive simulation
 model <- "iHgMiceBW.model"
 if (!file.exists("mcsim.iHgMiceBW.model.exe")) {
    RMCSim::makemcsim(model, dir = "modeling")
@@ -119,7 +58,7 @@ for (iter in seq(dim(sample_mice_mcmc)[1])){
   else xx <- rbind(xx, out)
 }
 
-# data manipulate
+# ouput manipulate
 xx <- xx |> mutate(conc = ifelse(Output_Var == "AUrine", "Urine",
   ifelse(Output_Var == "CKU", "Kidney",
     ifelse(Output_Var == "CBrnU", "Brain",
@@ -139,6 +78,17 @@ xx$label <- factor(xx$label,
 xx |> tail()
 
 #
+set_theme <- theme(
+  axis.text.y      = element_text(color = "black"),
+  axis.ticks.y     = element_line(color = "black"),
+  axis.text.x      = element_text(color = "black"),
+  axis.ticks.x     = element_line(color = "black"),
+  axis.line.x      = element_line(color = "black"),
+  axis.line.y      = element_line(color = "black"),
+  legend.key       = element_blank(),
+  axis.title       = element_blank(),
+  panel.background = element_blank()
+  )
 p1 <- xx |> filter(Simulation == 1 & Time > 0) |>
   ggplot() +
   scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),

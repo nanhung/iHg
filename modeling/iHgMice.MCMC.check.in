@@ -4,9 +4,9 @@
 Integrate (Lsodes, 1e-6, 1e-6, 1);
 # cd ./mcsim-6.2.0/IRIS_iHg/modeling/MCMC/MiceHier
 
-MCMC ("MCMC.default.out","", # name of output and restart file
+MCMC ("MCMC.check.out","MCMC.check.dat", # name of output and restart file
       "",           # name of data file
-      100000,0,      # iterations, print predictions flag,
+      100000,1,      # iterations, print predictions flag,
       1,100000,     # printing frequency, iters to print
       10101010);    # random seed (default )
 
@@ -97,8 +97,6 @@ Level { # # population level
         # Print (Aurine,  0);
         # Data  (Aurine, -1);
    
-        Print (Afeces,  0);
-        Data  (Afeces, -1); 
  
         Print (CBldU,  0);
         Data  (CBldU, -1);
@@ -135,14 +133,12 @@ Level { # # population level
         expowk = PerDose(1.0, 168,  0, 0.05);
         expodur = PerDose(1.0, 1344, 0, 0.05);
         
-        Print (CBldU , 24 , 72 , 240 , 480);
-        Data (CBldU, 0.014794515 , 0.005133886 , 0.001263642 , 0.000373918);
+        Print (CBldU ,0.5, 1, 2, 4, 8, 12, 24 , 72 , 240 , 480);
+        Data (CBldU, -1, -1, -1, -1, -1, -1,0.014794515 , 0.005133886 , 0.001263642 , 0.000373918);
       
         Print (Aurine,  0);
         Data  (Aurine, -1);
    
-        Print (Afeces,  0);
-        Data  (Afeces, -1); 
  
         # Print (CBldU,  0);
         # Data  (CBldU, -1);
@@ -179,17 +175,15 @@ Level { # # population level
         expowk = PerDose(1.0, 168,  0, 120);
         expodur = PerDose(1.0, 1176, 0, 1176);
         
-        Print (CBldU , 168, 504, 1176);
-        Data  (CBldU, 0.1, 0.1, 0.4);
+        Print (CBldU , 0.5, 1, 2, 4, 8, 12, 24, 48, 168, 504, 1176);
+        Data  (CBldU, -1, -1, -1, -1, -1, -1, -1, -1, 0.1, 0.1, 0.4);
         
-        Print (CKU, 168, 504, 840, 1176);
-        Data  (CKU, 3.9, 3.1, 1, 4);
+        Print (CKU, 0.5, 1, 2, 4, 8, 12, 24, 48, 168, 504, 840, 1176);
+        Data  (CKU, -1, -1, -1, -1, -1, -1, -1, -1, 3.9, 3.1, 1, 4);
 
         Print (Aurine,  0);
         Data  (Aurine, -1);
    
-        Print (Afeces,  0);
-        Data  (Afeces, -1); 
  
         # Print (CBldU,  0);
         # Data  (CBldU, -1);
@@ -222,17 +216,15 @@ Level { # # population level
         expowk = PerDose(1.0, 168,  0, 120);
         expodur = PerDose(1.0, 1176, 0, 1176);
         
-        Print (CBldU ,168, 504, 840, 1176);
-        Data (CBldU, 0.2, 0.5, 0.7, 0.6);  
+        Print (CBldU, 0.5, 1, 2, 4, 8, 12, 24, 48, 168, 504, 840, 1176);
+        Data (CBldU, -1, -1, -1, -1, -1, -1, -1, -1, 0.2, 0.5, 0.7, 0.6);  
         
-        Print (CKU, 168, 504, 840, 1176);
-        Data (CKU, 14.9, 16.9, 22.7, 20.7);
+        Print (CKU, 0.5, 1, 2, 4, 8, 12, 24, 48, 168, 504, 840, 1176);
+        Data (CKU, -1, -1, -1, -1, -1, -1, -1, -1, 14.9, 16.9, 22.7, 20.7);
 
         Print (Aurine,  0);
         Data  (Aurine, -1);
    
-        Print (Afeces,  0);
-        Data  (Afeces, -1); 
  
         # Print (CBldU,  0);
         # Data  (CBldU, -1);
@@ -265,17 +257,15 @@ Level { # # population level
         expowk = PerDose(1.0, 168,  0, 120);
         expodur = PerDose(1.0, 1176, 0, 1176);
         
-        Print (CBldU ,168, 504, 840, 1176);
-        Data (CBldU, 0.3, 0.5, 1.1, 1.4);
+        Print (CBldU, 0.5, 1, 2, 4, 8, 12, 24, 48, 168, 504, 840, 1176);
+        Data (CBldU, -1, -1, -1, -1, -1, -1, -1, -1, 0.3, 0.5, 1.1, 1.4);
         
-        Print (CKU, 168, 504, 840, 1176);
-        Data (CKU, 74.9, 68.9, 57.7, 57.7);     
+        Print (CKU, 0.5, 1, 2, 4, 8, 12, 24, 48, 168, 504, 840, 1176);
+        Data (CKU, -1, -1, -1, -1, -1, -1, -1, -1, 74.9, 68.9, 57.7, 57.7);     
       
         Print (Aurine,  0);
         Data  (Aurine, -1);
    
-        Print (Afeces,  0);
-        Data  (Afeces, -1); 
  
         # Print (CBldU,  0);
         # Data  (CBldU, -1);
@@ -314,11 +304,11 @@ Level { # # population level
         expowk = PerDose(1.0, 168,  0, 120);
         expodur = PerDose(1.0, 4320, 0, 4320);
         
-        Print (CKU, 1428, 2868,	4308);
-        Data  (CKU, 6.98,	7.02,	6.97);
+        Print (CKU, 0.5, 1, 2, 4, 8, 12, 24, 48, 1428, 2868,	4308);
+        Data  (CKU, -1, -1, -1, -1, -1, -1, -1, -1, 6.98,	7.02,	6.97);
     
-        Print (CLU, 1428, 2868,	4308);
-        Data  (CLU,1.2,	0.93,	0.8);
+        Print (CLU, 0.5, 1, 2, 4, 8, 12, 24, 48, 1428, 2868,	4308);
+        Data  (CLU, -1, -1, -1, -1, -1, -1, -1, -1,1.2,	0.93,	0.8);
         
         ################################################################################
 
@@ -326,8 +316,6 @@ Level { # # population level
         Print (Aurine,  0);
         Data  (Aurine, -1);
    
-        Print (Afeces,  0);
-        Data  (Afeces, -1); 
  
         Print (CBldU,  0);
         Data  (CBldU, -1);
@@ -360,12 +348,12 @@ Level { # # population level
         expowk = PerDose(1.0, 168,  0, 120);
         expodur = PerDose(1.0, 4320, 0, 4320);
         
-        Print (CKU, 1428, 2868,	4308);
-        Data  (CKU, 36.43,	26.43,	35.68);
+        Print (CKU, 0.5, 1, 2, 4, 8, 12, 24, 48, 1428, 2868,	4308);
+        Data  (CKU, -1, -1, -1, -1, -1, -1, -1, -1, 36.43,	26.43,	35.68);
         ### At 5000 ug/kg, male CKUSD. sd <- c(10.5, 7.75, 6.84)
   
-        Print (CLU, 1428, 2868,	4308);
-        Data  (CLU,2.66,	9.71,	2.93);
+        Print (CLU, 0.5, 1, 2, 4, 8, 12, 24, 48, 1428, 2868,	4308);
+        Data  (CLU, -1, -1, -1, -1, -1, -1, -1, -1,2.66,	9.71,	2.93);
         ### At 5000 ug/kg, male CLUSD. sd <- c(0.46, 3.52, 0.84)
         
         ################################################################################
@@ -373,8 +361,6 @@ Level { # # population level
         Print (Aurine,  0);
         Data  (Aurine, -1);
    
-        Print (Afeces,  0);
-        Data  (Afeces, -1); 
  
         Print (CBldU,  0);
         Data  (CBldU, -1);
@@ -407,25 +393,23 @@ Level { # # population level
         expowk = PerDose(1.0, 168,  0, 120);
         expodur = PerDose(1.0, 4320, 0, 4320);
         
-        Print (CKU, 1428, 2868,	4308);
-        Data  (CKU, 111.73,	104.73,	86.88);
+        Print (CKU, 0.5, 1, 2, 4, 8, 12, 24, 48, 1428, 2868,	4308);
+        Data  (CKU, -1, -1, -1, -1, -1, -1, -1, -1, 111.73,	104.73,	86.88);
         ### At 20000 ug/kg, male CKUSD. sd <- c(12.9, 10.1, 9.83) 
   
   
-        Print (CLU, 1428, 2868,	4308);
-        Data  (CLU, 9.88,	9.71,	10.55);
+        Print (CLU, 0.5, 1, 2, 4, 8, 12, 24, 48, 1428, 2868,	4308);
+        Data  (CLU, -1, -1, -1, -1, -1, -1, -1, -1, 9.88,	9.71,	10.55);
         ### At 20000 ug/kg, male CLUSD. sd <- c(1.81, 3.52, 3.94)
   
   
-        Print (CBrnU, 1428, 2868,	4308);
-        Data  (CBrnU, 0.24,	0.35,	0.19);
+        Print (CBrnU, 0.5, 1, 2, 4, 8, 12, 24, 48, 1428, 2868,	4308);
+        Data  (CBrnU, -1, -1, -1, -1, -1, -1, -1, -1, 0.24,	0.35,	0.19);
         
       
         Print (Aurine,  0);
         Data  (Aurine, -1);
    
-        Print (Afeces,  0);
-        Data  (Afeces, -1); 
  
         Print (CBldU,  0);
         Data  (CBldU, -1);
