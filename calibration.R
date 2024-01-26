@@ -2,12 +2,41 @@
 library(data.table)
 library(purrr)
 library(rstan)
+library(ggplot2)
+library(dplyr)
+
+
+#
+names(pdfFonts())
+my_font <- "sans"
+my_theme <- theme(
+  plot.title       = element_text(family = my_font, size = 14, 
+                                  face = "bold", hjust = 0.5, 
+                                  margin = ggplot2::margin(0, 0, 10, 0)),
+  axis.title.y     = element_text(face = "bold", size = 10, family = my_font, 
+                                  margin = ggplot2::margin(0, 10, 0, 0)),
+  axis.text.y      = element_text(color = "black"), 
+  axis.ticks.y     = element_line(color = "black"),
+  axis.text.x      = element_text(color = "black"),
+  axis.ticks.x     = element_line(color = "black"),
+  axis.title.x     = element_text(face = "bold", size = 10, 
+                                  family = my_font, 
+                                  margin = ggplot2::margin(10, 0, 0, 0)),
+  axis.line.x      = element_line(color = "black"),
+  axis.line.y      = element_line(color = "black"),
+  legend.key       = element_blank(),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  panel.border     = element_blank(),
+  panel.background = element_blank(),
+  plot.caption     = element_text(hjust = 0, family = my_font, size = 8)
+  )
 
 #
 out <- c("outputs/iHgMice_3365.out",
-         "outputs/iHgMice_4880.out",
-         "outputs/iHgMice_5916.out",
-         "outputs/iHgMice_6734.out")
+  "outputs/iHgMice_4880.out",
+  "outputs/iHgMice_5916.out",
+  "outputs/iHgMice_6734.out")
 data <- out |> map(fread) |> map(as.data.frame)
 n_chains <- length(data)
 sample_number <- dim(data[[1]])[1]
@@ -28,9 +57,9 @@ save(mice_mcmc, file = "outputs/iHgMice_mcmc.RData")
 
 #
 out <- c("outputs/iHgRat_3365.out",
-         "outputs/iHgRat_4880.out",
-         "outputs/iHgRat_5916.out",
-         "outputs/iHgRat_6734.out")
+  "outputs/iHgRat_4880.out",
+  "outputs/iHgRat_5916.out",
+  "outputs/iHgRat_6734.out")
 data <- out |> map(fread) |> map(as.data.frame)
 n_chains <- length(data)
 sample_number <- dim(data[[1]])[1]
@@ -51,9 +80,9 @@ save(rat_mcmc, file = "outputs/iHgRat_mcmc.RData")
 
 #
 out <- c("outputs/iHgHuman_3365.out",
-         "outputs/iHgHuman_4880.out",
-         "outputs/iHgHuman_5916.out",
-         "outputs/iHgHuman_6734.out")
+  "outputs/iHgHuman_4880.out",
+  "outputs/iHgHuman_5916.out",
+  "outputs/iHgHuman_6734.out")
 data <- out |> map(fread) |> map(as.data.frame)
 n_chains <- length(data)
 sample_number <- dim(data[[1]])[1]
@@ -67,45 +96,44 @@ for (i in 1:n_chains) {
 dimnames(x)[[3]] <- names(data[[1]])
 dim(x)
 
-x[, , -1] |> monitor()
+x[, , -1] |> monitor(warmup = 0)
 
-mice_mcmc <- x[seq(50001, 100001, 10), , ]
-save(mice_mcmc, file = "outputs/iHgHuman_mcmc.RData")
+human_mcmc <- x
+save(human_mcmc, file = "outputs/iHgHuman_mcmc.RData")
 
+#
+rm(list = ls())
 
-
-
-
-
+#
 load("outputs/iHgMice_mcmc.Rdata")
 no_sample <- 10
-seq_len(iHgMice_mcmc[])
-sample_iters <- sample(1:dim(iHgMice_mcmc)[1], no_sample)
-sample_iHgMice_mcmc <- iHgMice_mcmc[sample_iters, ,]
-nd2 <- dim(sample_iHgMice_mcmc)[3]
-dim(sample_iHgMice_mcmc) <- c(4*no_sample, nd2)
+sample_iters <- sample(seq_len(dim(mice_mcmc)[1]), no_sample)
+sample_mice_mcmc <- mice_mcmc[sample_iters, , ]
+nd2 <- dim(sample_mice_mcmc)[3]
+dim(sample_mice_mcmc) <- c(4 * no_sample, nd2)
+dim(sample_mice_mcmc)
 
-for(iter in seq(dim(sample_iHgMice_mcmc)[1])){
-  head(sample_iHgMice_mcmc, iter) |> head() |>
-    write.table(file="MCMC.check.dat", row.names=F, sep="\t")  
-  model <- "iHgMiceBW.model"
+model <- "iHgMiceBW.model"
+if (!file.exists("mcsim.iHgMiceBW.model.exe")) {
+   RMCSim::makemcsim(model, dir = "modeling")
+}
+for (iter in seq(dim(sample_mice_mcmc)[1])){
+  head(sample_mice_mcmc, iter) |> tail(1) |>
+    write.table(file = "MCMC.check.dat", row.names = FALSE, sep = "\t")
   input <- "iHgMice.MCMC.check.in"
   RMCSim::mcsim(model = model, input = input, dir = "modeling")
   out <- read.delim("MCMC.check.out")
   out$iter <- iter
-  if (iter == 1) X <- out
-    else X <- rbind(X, out)
+  if (iter == 1) xx <- out
+  else xx <- rbind(xx, out)
 }
-X |> tail()
+xx |> tail()
 
-  
-MCMCfinal <- do.call(rbind, list(X[[3]], X[[2]], X[[1]]))
-MCMCfinal |> tail(1) |> write.table(file="MCMC.check.dat", row.names=F, sep="\t")  
-model <- "gPYR_analytic_ss.model"
-#if(j %in% c(1:4)){
-  input <- paste0("gPYR_analytic_5met_check_", cohort[j], "_Total.mcmc.in")
-#} else {
-#  input <- paste0("gPYR_analytic_3met_check_", cohort[j], "Total.mcmc.in")
-#}  
-RMCSim::mcsim(model = model, input = input, dir = "MCSim")
+xx$Data[xx$Data == -1] <- NA
+
+xx |> filter(Simulation == 1 & Time > 0) |> 
+  ggplot() +
+  geom_line(aes(x = Time, y = Prediction, group = iter), color = "grey") +
+  geom_point(aes(x = Time, y = Data)) +
+  facet_grid(Output_Var ~ Simulation, scales = "free") + my_theme
 
