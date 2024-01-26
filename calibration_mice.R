@@ -9,9 +9,9 @@ library(scales)
 
 # posterior check
 out <- c("outputs/iHgMice_3365.out",
-  "outputs/iHgMice_4880.out",
-  "outputs/iHgMice_5916.out",
-  "outputs/iHgMice_6734.out")
+         "outputs/iHgMice_4880.out",
+         "outputs/iHgMice_5916.out",
+         "outputs/iHgMice_6734.out")
 data <- out |> map(fread) |> map(as.data.frame)
 n_chains <- length(data)
 sample_number <- dim(data[[1]])[1]
@@ -45,7 +45,7 @@ dim(sample_mice_mcmc)
 # posterior predictive simulation
 model <- "iHgMiceBW.model"
 if (!file.exists("mcsim.iHgMiceBW.model.exe")) {
-   RMCSim::makemcsim(model, dir = "modeling")
+  RMCSim::makemcsim(model, dir = "modeling")
 }
 for (iter in seq(dim(sample_mice_mcmc)[1])){
   head(sample_mice_mcmc, iter) |> tail(1) |>
@@ -59,24 +59,25 @@ for (iter in seq(dim(sample_mice_mcmc)[1])){
 }
 
 # ouput manipulate
-xx <- xx |> mutate(conc = ifelse(Output_Var == "AUrine", "Urine",
-  ifelse(Output_Var == "CKU", "Kidney",
-    ifelse(Output_Var == "CBrnU", "Brain",
-      ifelse(Output_Var == "CBldU", "Blood", "Liver")))))
-xx <- xx |> mutate(label = ifelse(Simulation == 1, "IV: 400 ug Hg/kg",
-  ifelse(Simulation == 2, "Oral water: 1,000 ug Hg/kg",
-    ifelse(Simulation == 3, "Oral gavage: 3,000 ug Hg/kg/d",
-      ifelse(Simulation == 4, "Oral gavage: 15,000 ug Hg/kg/d",
-        ifelse(Simulation == 5, "Oral gavage: 75,000 ug Hg/kg/d",
-          ifelse(Simulation == 6, "Oral gavage: 925 ug Hg/kg/d",
-            ifelse(Simulation == 7, "Oral gavage: 3,695 ug Hg/kg/d",
-              "Oral gavage: 14,775 ug/kg/d"))))))))
+xx <- xx |> 
+  mutate(conc = ifelse(Output_Var == "AUrine", "Urine",
+                                 ifelse(Output_Var == "CKU", "Kidney",
+                                        ifelse(Output_Var == "CBrnU", "Brain",
+                                               ifelse(Output_Var == "CBldU", "Blood", "Liver")))))
+xx <- xx |> 
+  mutate(label = ifelse(Simulation == 1, "IV: 400 ug Hg/kg",
+                                  ifelse(Simulation == 2, "Oral water: 1,000 ug Hg/kg",
+                                         ifelse(Simulation == 3, "Oral gavage: 3,000 ug Hg/kg/d",
+                                                ifelse(Simulation == 4, "Oral gavage: 15,000 ug Hg/kg/d",
+                                                       ifelse(Simulation == 5, "Oral gavage: 75,000 ug Hg/kg/d",
+                                                              ifelse(Simulation == 6, "Oral gavage: 925 ug Hg/kg/d",
+                                                                     ifelse(Simulation == 7, "Oral gavage: 3,695 ug Hg/kg/d",
+                                                                            "Oral gavage: 14,775 ug/kg/d"))))))))
 xx$Data[xx$Data == -1] <- NA
 adj_level <- xx$label |> unique()
 xx$label <- factor(xx$label,
-  level = adj_level)
+                   level = adj_level)
 xx |> tail()
-
 #
 set_theme <- theme(
   axis.text.y      = element_text(color = "black"),
@@ -88,7 +89,7 @@ set_theme <- theme(
   legend.key       = element_blank(),
   axis.title       = element_blank(),
   panel.background = element_blank()
-  )
+)
 p1 <- xx |> filter(Simulation == 1 & Time > 0) |>
   ggplot() +
   scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
@@ -129,27 +130,27 @@ p4 <- xx |> filter(Simulation %in% c(6:8) & Time > 0) |>
 # add the title and axis label
 title <- ggdraw() +
   draw_label(
-  "Mice",
-  fontface = "bold",
-  x = 0,
-  size = 18,
-  hjust = 0
-) +
+    "Mice",
+    fontface = "bold",
+    x = 0,
+    size = 18,
+    hjust = 0
+  ) +
   theme(
     plot.margin = margin(0, 0, 0, 1)
   )
 xlab <- ggdraw() +
   draw_label(
-  "Time (hr)",
-  fontface = "bold", size = 14, hjust = 0,
- ) + theme(
+    "Time (hr)",
+    fontface = "bold", size = 14, hjust = 0,
+  ) + theme(
     plot.margin = margin(0, 0, 0, 1)
   )
 ylab <- ggdraw() +
   draw_label(
-  "Amount (ug) / Concentration (ug/mL)",
-  fontface = "bold", size = 14, vjust = 0, angle = 90
- ) + theme(
+    "Amount (ug) / Concentration (ug/mL)",
+    fontface = "bold", size = 14, vjust = 0, angle = 90
+  ) + theme(
     plot.margin = margin(0, 0, 0, 1)
   )
 
@@ -161,14 +162,14 @@ plot_grid(
     title,
     plot_grid(
       plot_grid(p1, p2, nrow = 2, labels = c("A", "B"),
-        rel_heights = c(3 / 4, 1 / 4)),
+                rel_heights = c(3 / 4, 1 / 4)),
       plot_grid(
         p3, p4, nrow = 2,
         labels = c("C", "D")
       ),
       nrow = 1, rel_widths = c(0.33, 0.66)
-  ),
-  xlab, nrow = 3, rel_heights = c(0.05, 1, 0.05)),
+    ),
+    xlab, nrow = 3, rel_heights = c(0.05, 1, 0.05)),
   nrow = 1, rel_widths = c(0.02, 1)
 )
 dev.off()
