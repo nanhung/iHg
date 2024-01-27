@@ -59,12 +59,12 @@ for (iter in seq(dim(sample_mice_mcmc)[1])){
 }
 
 # ouput manipulate
-xx <- xx |> 
+xx <- xx |>
   mutate(conc = ifelse(Output_Var == "AUrine", "Urine",
                                  ifelse(Output_Var == "CKU", "Kidney",
                                         ifelse(Output_Var == "CBrnU", "Brain",
                                                ifelse(Output_Var == "CBldU", "Blood", "Liver")))))
-xx <- xx |> 
+xx <- xx |>
   mutate(label = ifelse(Simulation == 1, "IV: 400 ug Hg/kg",
                                   ifelse(Simulation == 2, "Oral water: 1,000 ug Hg/kg",
                                          ifelse(Simulation == 3, "Oral gavage: 3,000 ug Hg/kg/d",
@@ -75,10 +75,10 @@ xx <- xx |>
                                                                             "Oral gavage: 14,775 ug/kg/d"))))))))
 xx$Data[xx$Data == -1] <- NA
 adj_level <- xx$label |> unique()
-xx$label <- factor(xx$label,
-                   level = adj_level)
+xx$label <- factor(xx$label, level = adj_level)
 xx |> tail()
-#
+
+# define plotting element
 set_theme <- theme(
   axis.text.y      = element_text(color = "black"),
   axis.ticks.y     = element_line(color = "black"),
