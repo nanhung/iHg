@@ -57,22 +57,24 @@ for (iter in seq(dim(sample_rat_mcmc)[1])){
   if (iter == 1) xx <- out
   else xx <- rbind(xx, out)
 }
+xx$Output_Var |> unique()
+
 
 # ouput manipulate
 xx <- xx |>
-  mutate(conc = ifelse(Output_Var == "AUrine", "Urine",
+  mutate(conc = ifelse(Output_Var == "Aurine", "Urine",
                                  ifelse(Output_Var == "CKU", "Kidney",
                                         ifelse(Output_Var == "CBrnU", "Brain",
-                                               ifelse(Output_Var == "CBldU", "Blood", "Liver")))))
+                                               ifelse(Output_Var == "CBldU", "Blood", ifelse(Output_Var == "CLU", "Liver", "Feces"))))))
 xx <- xx |>
-  mutate(label = ifelse(Simulation == 1, "IV: 400 ug Hg/kg",
-                                  ifelse(Simulation == 2, "Oral water: 1,000 ug Hg/kg",
-                                         ifelse(Simulation == 3, "Oral gavage: 3,000 ug Hg/kg/d",
-                                                ifelse(Simulation == 4, "Oral gavage: 15,000 ug Hg/kg/d",
-                                                       ifelse(Simulation == 5, "Oral gavage: 75,000 ug Hg/kg/d",
-                                                              ifelse(Simulation == 6, "Oral gavage: 925 ug Hg/kg/d",
-                                                                     ifelse(Simulation == 7, "Oral gavage: 3,695 ug Hg/kg/d",
-                                                                            "Oral gavage: 14,775 ug/kg/d"))))))))
+  mutate(label = ifelse(Simulation == 1, "IV: 250 ug Hg/kg",
+                                  ifelse(Simulation == 2, "Oral: 2,770 ug Hg/kg",
+                                         ifelse(Simulation == 3, "Oral water: 100 ug Hg/kg/d",
+                                                ifelse(Simulation == 4, "Oral water: 1,000 ug Hg/kg/d",
+                                                       ifelse(Simulation == 5, "Oral water: 7,200 ug Hg/kg/d",
+                                                              ifelse(Simulation == 6, "Oral gavage: 230 ug Hg/kg/d",
+                                                                     ifelse(Simulation == 7, "Oral gavage: 925 ug Hg/kg/d",
+                                                                            "Oral gavage: 3,695 ug/kg/d"))))))))
 xx$Data[xx$Data == -1] <- NA
 adj_level <- xx$label |> unique()
 xx$label <- factor(xx$label, level = adj_level)
@@ -92,7 +94,7 @@ set_theme <- theme(
 )
 p1 <- xx |> filter(Simulation == 1 & Time > 0) |>
   ggplot() +
-  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x, n = 3),
                 labels = trans_format("log10", scales::math_format(10^.x))) +
   geom_line(aes(x = Time, y = Prediction, group = iter), color = "grey") +
   geom_point(aes(x = Time, y = Data)) +
@@ -101,7 +103,7 @@ p1 <- xx |> filter(Simulation == 1 & Time > 0) |>
   set_theme
 p2 <- xx |> filter(Simulation == 2 & Time > 0) |>
   ggplot() +
-  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x, n = 3),
                 labels = trans_format("log10", scales::math_format(10^.x))) +
   geom_line(aes(x = Time, y = Prediction, group = iter), color = "grey") +
   geom_point(aes(x = Time, y = Data)) +
@@ -110,7 +112,7 @@ p2 <- xx |> filter(Simulation == 2 & Time > 0) |>
   set_theme
 p3 <- xx |> filter(Simulation %in% c(3:5) & Time > 0) |>
   ggplot() +
-  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x, n = 3),
                 labels = trans_format("log10", scales::math_format(10^.x))) +
   geom_line(aes(x = Time, y = Prediction, group = iter), color = "grey") +
   geom_point(aes(x = Time, y = Data)) +
@@ -119,7 +121,7 @@ p3 <- xx |> filter(Simulation %in% c(3:5) & Time > 0) |>
   set_theme
 p4 <- xx |> filter(Simulation %in% c(6:8) & Time > 0) |>
   ggplot() +
-  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x, n = 3),
                 labels = trans_format("log10", scales::math_format(10^.x))) +
   geom_line(aes(x = Time, y = Prediction, group = iter), color = "grey") +
   geom_point(aes(x = Time, y = Data)) +
@@ -130,7 +132,7 @@ p4 <- xx |> filter(Simulation %in% c(6:8) & Time > 0) |>
 # add the title and axis label
 title <- ggdraw() +
   draw_label(
-    "Mice",
+    "Rat",
     fontface = "bold",
     x = 0,
     size = 18,
@@ -162,7 +164,7 @@ plot_grid(
     title,
     plot_grid(
       plot_grid(p1, p2, nrow = 2, labels = c("A", "B"),
-                rel_heights = c(3 / 4, 1 / 4)),
+                rel_heights = c(2 / 3, 1 / 3)),
       plot_grid(
         p3, p4, nrow = 2,
         labels = c("C", "D")
