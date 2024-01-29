@@ -1,0 +1,177 @@
+# packagef
+library(data.table)
+library(purrr)
+library(rstan)
+library(ggplot2)
+library(dplyr)
+library(cowplot)
+library(scales)
+
+# posterior check
+out <- c("outputs/iHgRat_3365.out",
+         "outputs/iHgRat_4880.out",
+         "outputs/iHgRat_5916.out",
+         "outputs/iHgRat_6734.out")
+data <- out |> map(fread) |> map(as.data.frame)
+n_chains <- length(data)
+sample_number <- dim(data[[1]])[1]
+dim <- c(sample_number, n_chains, dim(data[[1]])[2])
+n_iter <- dim(data[[1]])[1]
+n_param <- dim(data[[1]])[2]
+x <- array(sample_number:(n_iter * n_chains * n_param), dim = dim)
+for (i in 1:n_chains) {
+  x[, i, ] <- as.matrix(data[[i]][1:n_iter, ])
+}
+dimnames(x)[[3]] <- names(data[[1]])
+dim(x)
+x[seq(50001, 100001, 10), , -1] |> monitor(warmup = 0)
+
+# Save to RData
+rat_mcmc <- x[seq(50001, 100001, 10), , ]
+save(rat_mcmc, file = "outputs/iHgRat_mcmc.RData")
+
+# tidy
+rm(list = ls())
+
+# data manipulate (randon sample 20 iters from 4 chains)
+load("outputs/iHgRat_mcmc.Rdata")
+no_sample <- 20
+sample_iters <- sample(seq_len(dim(rat_mcmc)[1]), no_sample)
+sample_rat_mcmc <- rat_mcmc[sample_iters, , ]
+nd2 <- dim(sample_rat_mcmc)[3]
+dim(sample_rat_mcmc) <- c(4 * no_sample, nd2)
+dim(sample_rat_mcmc)
+
+# posterior predictive simulation
+model <- "iHgRatBW.model"
+if (!file.exists("mcsim.iHgRatBW.model.exe")) {
+  RMCSim::makemcsim(model, dir = "modeling")
+}
+for (iter in seq(dim(sample_rat_mcmc)[1])){
+  head(sample_rat_mcmc, iter) |> tail(1) |>
+    write.table(file = "MCMC.check.dat", row.names = FALSE, sep = "\t")
+  input <- "iHgRat.MCMC.check.in"
+  RMCSim::mcsim(model = model, input = input, dir = "modeling")
+  out <- read.delim("MCMC.check.out")
+  out$iter <- iter
+  if (iter == 1) xx <- out
+  else xx <- rbind(xx, out)
+}
+xx$Output_Var |> unique()
+
+
+# ouput manipulate
+xx <- xx |>
+  mutate(conc = ifelse(Output_Var == "Aurine", "Urine",
+                                 ifelse(Output_Var == "CKU", "Kidney",
+                                        ifelse(Output_Var == "CBrnU", "Brain",
+                                               ifelse(Output_Var == "CBldU", "Blood", ifelse(Output_Var == "CLU", "Liver", "Feces"))))))
+xx <- xx |>
+  mutate(label = ifelse(Simulation == 1, "IV: 250 ug Hg/kg",
+                                  ifelse(Simulation == 2, "Oral: 2,770 ug Hg/kg",
+                                         ifelse(Simulation == 3, "Oral water: 100 ug Hg/kg/d",
+                                                ifelse(Simulation == 4, "Oral water: 1,000 ug Hg/kg/d",
+                                                       ifelse(Simulation == 5, "Oral water: 7,200 ug Hg/kg/d",
+                                                              ifelse(Simulation == 6, "Oral gavage: 230 ug Hg/kg/d",
+                                                                     ifelse(Simulation == 7, "Oral gavage: 925 ug Hg/kg/d",
+                                                                            "Oral gavage: 3,695 ug/kg/d"))))))))
+xx$Data[xx$Data == -1] <- NA
+adj_level <- xx$label |> unique()
+xx$label <- factor(xx$label, level = adj_level)
+xx |> tail()
+
+# define plotting element
+set_theme <- theme(
+  axis.text.y      = element_text(color = "black"),
+  axis.ticks.y     = element_line(color = "black"),
+  axis.text.x      = element_text(color = "black"),
+  axis.ticks.x     = element_line(color = "black"),
+  axis.line.x      = element_line(color = "black"),
+  axis.line.y      = element_line(color = "black"),
+  legend.key       = element_blank(),
+  axis.title       = element_blank(),
+  panel.background = element_blank()
+)
+p1 <- xx |> filter(Simulation == 1 & Time > 0) |>
+  ggplot() +
+  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x, n = 3),
+                labels = trans_format("log10", scales::math_format(10^.x))) +
+  geom_line(aes(x = Time, y = Prediction, group = iter), color = "grey") +
+  geom_point(aes(x = Time, y = Data)) +
+  facet_grid(conc ~ label, scales = "free") +
+  theme_bw() +
+  set_theme
+p2 <- xx |> filter(Simulation == 2 & Time > 0) |>
+  ggplot() +
+  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x, n = 3),
+                labels = trans_format("log10", scales::math_format(10^.x))) +
+  geom_line(aes(x = Time, y = Prediction, group = iter), color = "grey") +
+  geom_point(aes(x = Time, y = Data)) +
+  facet_grid(conc ~ label, scales = "free") +
+  theme_bw() +
+  set_theme
+p3 <- xx |> filter(Simulation %in% c(3:5) & Time > 0) |>
+  ggplot() +
+  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x, n = 3),
+                labels = trans_format("log10", scales::math_format(10^.x))) +
+  geom_line(aes(x = Time, y = Prediction, group = iter), color = "grey") +
+  geom_point(aes(x = Time, y = Data)) +
+  facet_grid(conc ~ label, scales = "free") +
+  theme_bw() +
+  set_theme
+p4 <- xx |> filter(Simulation %in% c(6:8) & Time > 0) |>
+  ggplot() +
+  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x, n = 3),
+                labels = trans_format("log10", scales::math_format(10^.x))) +
+  geom_line(aes(x = Time, y = Prediction, group = iter), color = "grey") +
+  geom_point(aes(x = Time, y = Data)) +
+  facet_grid(conc ~ label, scales = "free") +
+  theme_bw() +
+  set_theme
+
+# add the title and axis label
+title <- ggdraw() +
+  draw_label(
+    "Rat",
+    fontface = "bold",
+    x = 0,
+    size = 18,
+    hjust = 0
+  ) +
+  theme(
+    plot.margin = margin(0, 0, 0, 1)
+  )
+xlab <- ggdraw() +
+  draw_label(
+    "Time (hr)",
+    fontface = "bold", size = 14, hjust = 0,
+  ) + theme(
+    plot.margin = margin(0, 0, 0, 1)
+  )
+ylab <- ggdraw() +
+  draw_label(
+    "Amount (ug) / Concentration (ug/mL)",
+    fontface = "bold", size = 14, vjust = 0, angle = 90
+  ) + theme(
+    plot.margin = margin(0, 0, 0, 1)
+  )
+
+# plot
+pdf(height = 11, width = 18)
+plot_grid(
+  ylab,
+  plot_grid(
+    title,
+    plot_grid(
+      plot_grid(p1, p2, nrow = 2, labels = c("A", "B"),
+                rel_heights = c(2 / 3, 1 / 3)),
+      plot_grid(
+        p3, p4, nrow = 2,
+        labels = c("C", "D")
+      ),
+      nrow = 1, rel_widths = c(0.33, 0.66)
+    ),
+    xlab, nrow = 3, rel_heights = c(0.05, 1, 0.05)),
+  nrow = 1, rel_widths = c(0.02, 1)
+)
+dev.off()
