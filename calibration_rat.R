@@ -48,9 +48,9 @@ if (!file.exists("mcsim.iHgRatBW.model.exe")) {
   RMCSim::makemcsim(model, dir = "modeling")
 }
 for (iter in seq(dim(sample_rat_mcmc)[1])){
-  head(sample_mice_mcmc, iter) |> tail(1) |>
+  head(sample_rat_mcmc, iter) |> tail(1) |>
     write.table(file = "MCMC.check.dat", row.names = FALSE, sep = "\t")
-  input <- "iHgMice.MCMC.check.in"
+  input <- "iHgRat.MCMC.check.in"
   RMCSim::mcsim(model = model, input = input, dir = "modeling")
   out <- read.delim("MCMC.check.out")
   out$iter <- iter
