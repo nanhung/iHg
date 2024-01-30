@@ -1,4 +1,4 @@
-# packagef
+# package
 library(data.table)
 library(purrr)
 library(rstan)
@@ -8,10 +8,10 @@ library(cowplot)
 library(scales)
 
 # posterior check
-out <- c("outputs/iHgRat_3365.out",
-         "outputs/iHgRat_4880.out",
-         "outputs/iHgRat_5916.out",
-         "outputs/iHgRat_6734.out")
+out <- c("outputs/iHgHuman_3365.out",
+         "outputs/iHgHuman_4880.out",
+         "outputs/iHgHuman_5916.out",
+         "outputs/iHgHuman_6734.out")
 data <- out |> map(fread) |> map(as.data.frame)
 n_chains <- length(data)
 sample_number <- dim(data[[1]])[1]
@@ -24,33 +24,33 @@ for (i in 1:n_chains) {
 }
 dimnames(x)[[3]] <- names(data[[1]])
 dim(x)
-x[seq(50001, 100001, 10), , -1] |> monitor(warmup = 0)
+x[seq(1, 10001, 2), , -1] |> monitor(warmup = 0)
 
 # Save to RData
-rat_mcmc <- x[seq(50001, 100001, 10), , ]
-save(rat_mcmc, file = "outputs/iHgRat_mcmc.RData")
+human_mcmc <- x[seq(1, 10001, 2), , ]
+save(human_mcmc, file = "outputs/iHgHuman_mcmc.RData")
 
 # tidy
 rm(list = ls())
 
 # data manipulate (randon sample 20 iters from 4 chains)
-load("outputs/iHgRat_mcmc.Rdata")
+load("outputs/iHgHuman_mcmc.Rdata")
 no_sample <- 20
-sample_iters <- sample(seq_len(dim(rat_mcmc)[1]), no_sample)
-sample_rat_mcmc <- rat_mcmc[sample_iters, , ]
-nd2 <- dim(sample_rat_mcmc)[3]
-dim(sample_rat_mcmc) <- c(4 * no_sample, nd2)
-dim(sample_rat_mcmc)
+sample_iters <- sample(seq_len(dim(human_mcmc)[1]), no_sample)
+sample_human_mcmc <- human_mcmc[sample_iters, , ]
+nd2 <- dim(sample_human_mcmc)[3]
+dim(sample_human_mcmc) <- c(4 * no_sample, nd2)
+dim(sample_human_mcmc)
 
 # posterior predictive simulation
-model <- "iHgRatBW.model"
-if (!file.exists("mcsim.iHgRatBW.model.exe")) {
+model <- "iHgHumanBW.model"
+if (!file.exists("mcsim.iHgHumanBW.model.exe")) {
   RMCSim::makemcsim(model, dir = "modeling")
 }
-for (iter in seq(dim(sample_rat_mcmc)[1])){
-  head(sample_rat_mcmc, iter) |> tail(1) |>
+for (iter in seq(dim(sample_human_mcmc)[1])){
+  head(sample_human_mcmc, iter) |> tail(1) |>
     write.table(file = "MCMC.check.dat", row.names = FALSE, sep = "\t")
-  input <- "iHgRat.MCMC.check.in"
+  input <- "iHgHuman.MCMC.check.in"
   RMCSim::mcsim(model = model, input = input, dir = "modeling")
   out <- read.delim("MCMC.check.out")
   out$iter <- iter
@@ -59,7 +59,6 @@ for (iter in seq(dim(sample_rat_mcmc)[1])){
 }
 xx$Output_Var |> unique()
 
-
 # ouput manipulate
 xx <- xx |>
   mutate(conc = ifelse(Output_Var == "Aurine", "Urine",
@@ -67,14 +66,8 @@ xx <- xx |>
                                         ifelse(Output_Var == "CBrnU", "Brain",
                                                ifelse(Output_Var == "CBldU", "Blood", ifelse(Output_Var == "CLU", "Liver", "Feces"))))))
 xx <- xx |>
-  mutate(label = ifelse(Simulation == 1, "IV: 250 ug Hg/kg",
-                                  ifelse(Simulation == 2, "Oral: 2,770 ug Hg/kg",
-                                         ifelse(Simulation == 3, "Oral water: 100 ug Hg/kg/d",
-                                                ifelse(Simulation == 4, "Oral water: 1,000 ug Hg/kg/d",
-                                                       ifelse(Simulation == 5, "Oral water: 7,200 ug Hg/kg/d",
-                                                              ifelse(Simulation == 6, "Oral gavage: 230 ug Hg/kg/d",
-                                                                     ifelse(Simulation == 7, "Oral gavage: 925 ug Hg/kg/d",
-                                                                            "Oral gavage: 3,695 ug/kg/d"))))))))
+  mutate(label = ifelse(Simulation == 1, "IV: 0.025 ug Hg/kg",
+                                  ifelse(Simulation == 2, "Oral: 0.09375 ug Hg/kg", "")))
 xx$Data[xx$Data == -1] <- NA
 adj_level <- xx$label |> unique()
 xx$label <- factor(xx$label, level = adj_level)
@@ -110,29 +103,11 @@ p2 <- xx |> filter(Simulation == 2 & Time > 0) |>
   facet_grid(conc ~ label, scales = "free") +
   theme_bw() +
   set_theme
-p3 <- xx |> filter(Simulation %in% c(3:5) & Time > 0) |>
-  ggplot() +
-  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x, n = 3),
-                labels = trans_format("log10", scales::math_format(10^.x))) +
-  geom_line(aes(x = Time, y = Prediction, group = iter), color = "grey") +
-  geom_point(aes(x = Time, y = Data)) +
-  facet_grid(conc ~ label, scales = "free") +
-  theme_bw() +
-  set_theme
-p4 <- xx |> filter(Simulation %in% c(6:8) & Time > 0) |>
-  ggplot() +
-  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x, n = 3),
-                labels = trans_format("log10", scales::math_format(10^.x))) +
-  geom_line(aes(x = Time, y = Prediction, group = iter), color = "grey") +
-  geom_point(aes(x = Time, y = Data)) +
-  facet_grid(conc ~ label, scales = "free") +
-  theme_bw() +
-  set_theme
 
 # add the title and axis label
 title <- ggdraw() +
   draw_label(
-    "Rat",
+    "Human",
     fontface = "bold",
     x = 0,
     size = 18,
@@ -150,7 +125,7 @@ xlab <- ggdraw() +
   )
 ylab <- ggdraw() +
   draw_label(
-    "Amount (ug) / Concentration (ug/mL)",
+    "Amount (ug) / Concenthumanion (ug/mL)",
     fontface = "bold", size = 14, vjust = 0, angle = 90
   ) + theme(
     plot.margin = margin(0, 0, 0, 1)
@@ -161,17 +136,10 @@ pdf(height = 11, width = 18)
 plot_grid(
   ylab,
   plot_grid(
-    title,
-    plot_grid(
-      plot_grid(p1, p2, nrow = 2, labels = c("A", "B"),
-                rel_heights = c(2 / 3, 1 / 3)),
-      plot_grid(
-        p3, p4, nrow = 2,
-        labels = c("C", "D")
-      ),
-      nrow = 1, rel_widths = c(0.33, 0.66)
-    ),
-    xlab, nrow = 3, rel_heights = c(0.05, 1, 0.05)),
+    title, 
+    plot_grid(p1, p2, nrow = 1, labels = c("A", "B"), rel_widths = c(0.5, 0.5)),
+    xlab, nrow = 3, rel_heights = c(0.05, 1, 0.05)
+  ),
   nrow = 1, rel_widths = c(0.02, 1)
 )
 dev.off()
