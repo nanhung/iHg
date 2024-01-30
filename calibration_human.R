@@ -1,4 +1,4 @@
-# package
+# packag
 library(data.table)
 library(purrr)
 library(rstan)
@@ -48,7 +48,8 @@ if (!file.exists("mcsim.iHgHumanBW.model.exe")) {
   RMCSim::makemcsim(model, dir = "modeling")
 }
 for (iter in seq(dim(sample_human_mcmc)[1])){
-  head(sample_human_mcmc, iter) |> tail(1) |>
+  head(sample_human_mcmc, iter) |>
+    tail(1) |>
     write.table(file = "MCMC.check.dat", row.names = FALSE, sep = "\t")
   input <- "iHgHuman.MCMC.check.in"
   RMCSim::mcsim(model = model, input = input, dir = "modeling")
@@ -62,12 +63,14 @@ xx$Output_Var |> unique()
 # ouput manipulate
 xx <- xx |>
   mutate(conc = ifelse(Output_Var == "Aurine", "Urine",
-                                 ifelse(Output_Var == "CKU", "Kidney",
-                                        ifelse(Output_Var == "CBrnU", "Brain",
-                                               ifelse(Output_Var == "CBldU", "Blood", ifelse(Output_Var == "CLU", "Liver", "Feces"))))))
+                       ifelse(Output_Var == "CKU", "Kidney",
+                              ifelse(Output_Var == "CBrnU", "Brain",
+                                     ifelse(Output_Var == "CBldU", "Blood",
+                                            ifelse(Output_Var == "CLU", "Liver",
+                                                   "Feces"))))))
 xx <- xx |>
   mutate(label = ifelse(Simulation == 1, "IV: 0.025 ug Hg/kg",
-                                  ifelse(Simulation == 2, "Oral: 0.09375 ug Hg/kg", "")))
+                        ifelse(Simulation == 2, "Oral: 0.09375 ug Hg/kg", "")))
 xx$Data[xx$Data == -1] <- NA
 adj_level <- xx$label |> unique()
 xx$label <- factor(xx$label, level = adj_level)
@@ -85,7 +88,8 @@ set_theme <- theme(
   axis.title       = element_blank(),
   panel.background = element_blank()
 )
-p1 <- xx |> filter(Simulation == 1 & Time > 0) |>
+p1 <- xx |>
+  filter(Simulation == 1 & Time > 0) |>
   ggplot() +
   scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x, n = 3),
                 labels = trans_format("log10", scales::math_format(10^.x))) +
@@ -94,7 +98,8 @@ p1 <- xx |> filter(Simulation == 1 & Time > 0) |>
   facet_grid(conc ~ label, scales = "free") +
   theme_bw() +
   set_theme
-p2 <- xx |> filter(Simulation == 2 & Time > 0) |>
+p2 <- xx |>
+  filter(Simulation == 2 & Time > 0) |>
   ggplot() +
   scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x, n = 3),
                 labels = trans_format("log10", scales::math_format(10^.x))) +
@@ -113,30 +118,24 @@ title <- ggdraw() +
     size = 18,
     hjust = 0
   ) +
-  theme(
-    plot.margin = margin(0, 0, 0, 1)
-  )
+  theme(plot.margin = margin(0, 0, 0, 1))
 xlab <- ggdraw() +
   draw_label(
     "Time (hr)",
     fontface = "bold", size = 14, hjust = 0,
-  ) + theme(
-    plot.margin = margin(0, 0, 0, 1)
-  )
+  ) + theme(plot.margin = margin(0, 0, 0, 1))
 ylab <- ggdraw() +
   draw_label(
     "Amount (ug) / Concenthumanion (ug/mL)",
     fontface = "bold", size = 14, vjust = 0, angle = 90
-  ) + theme(
-    plot.margin = margin(0, 0, 0, 1)
-  )
+  ) + theme(plot.margin = margin(0, 0, 0, 1))
 
 # plot
 pdf(height = 11, width = 18)
 plot_grid(
   ylab,
   plot_grid(
-    title, 
+    title,
     plot_grid(p1, p2, nrow = 1, labels = c("A", "B"), rel_widths = c(0.5, 0.5)),
     xlab, nrow = 3, rel_heights = c(0.05, 1, 0.05)
   ),

@@ -6,6 +6,6 @@ library(RMCSim)
 install_mcsim(version = "6.1.0")
 mcsim_version()
 
-pkgs <- c("foreach", "doParallel", "data.table", "purrr", 
-          "rstan", "tidyr", "dplyr", "ggplot2")
+pkgs <- c("foreach", "doParallel", "data.table", "purrr",
+          "rstan", "tidyr", "dplyr", "ggplot2", "cowplot")
 install.packages(pkgs)
