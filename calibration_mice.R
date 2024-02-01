@@ -90,7 +90,29 @@ set_theme <- theme(
   axis.title       = element_blank(),
   panel.background = element_blank()
 )
-p1 <- xx |> filter(Simulation == 1 & Time > 0) |>
+p1 <- xx |>
+  filter(Simulation == 1 & Time > 0) |>
+  ggplot() +
+  scale_y_log10(lim = c(10^-3, 10^2),
+                breaks = trans_breaks("log10", function(x) 10^x, n = 3),
+                labels = trans_format("log10", scales::math_format(10^.x))) +
+  geom_line(aes(x = Time, y = Prediction, group = iter), color = "grey") +
+  geom_point(aes(x = Time, y = Data)) +
+  facet_grid(conc ~ label, scales = "free") +
+  theme_bw() +
+  set_theme
+p2 <- xx |>
+  filter(Simulation == 2 & Time > 0) |>
+  ggplot() +
+  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x, n = 3),
+                labels = trans_format("log10", scales::math_format(10^.x))) +
+  geom_line(aes(x = Time, y = Prediction, group = iter), color = "grey") +
+  geom_point(aes(x = Time, y = Data)) +
+  facet_grid(conc ~ label, scales = "free") +
+  theme_bw() +
+  set_theme
+p3 <- xx |>
+  filter(Simulation %in% c(3:5) & Time > 0) |>
   ggplot() +
   scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
                 labels = trans_format("log10", scales::math_format(10^.x))) +
@@ -99,25 +121,8 @@ p1 <- xx |> filter(Simulation == 1 & Time > 0) |>
   facet_grid(conc ~ label, scales = "free") +
   theme_bw() +
   set_theme
-p2 <- xx |> filter(Simulation == 2 & Time > 0) |>
-  ggplot() +
-  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
-                labels = trans_format("log10", scales::math_format(10^.x))) +
-  geom_line(aes(x = Time, y = Prediction, group = iter), color = "grey") +
-  geom_point(aes(x = Time, y = Data)) +
-  facet_grid(conc ~ label, scales = "free") +
-  theme_bw() +
-  set_theme
-p3 <- xx |> filter(Simulation %in% c(3:5) & Time > 0) |>
-  ggplot() +
-  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
-                labels = trans_format("log10", scales::math_format(10^.x))) +
-  geom_line(aes(x = Time, y = Prediction, group = iter), color = "grey") +
-  geom_point(aes(x = Time, y = Data)) +
-  facet_grid(conc ~ label, scales = "free") +
-  theme_bw() +
-  set_theme
-p4 <- xx |> filter(Simulation %in% c(6:8) & Time > 0) |>
+p4 <- xx |>
+  filter(Simulation %in% c(6:8) & Time > 0) |>
   ggplot() +
   scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
                 labels = trans_format("log10", scales::math_format(10^.x))) +
@@ -155,7 +160,7 @@ ylab <- ggdraw() +
   )
 
 # plot
-pdf(height = 11, width = 18)
+pdf(file = "calibration_mice.pdf", height = 11, width = 18)
 plot_grid(
   ylab,
   plot_grid(

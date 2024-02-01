@@ -91,7 +91,8 @@ set_theme <- theme(
 p1 <- xx |>
   filter(Simulation == 1 & Time > 0) |>
   ggplot() +
-  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x, n = 3),
+  scale_y_log10(lim = c(10^-2, 10^0),
+                breaks = trans_breaks("log10", function(x) 10^x, n = 3),
                 labels = trans_format("log10", scales::math_format(10^.x))) +
   geom_line(aes(x = Time, y = Prediction, group = iter), color = "grey") +
   geom_point(aes(x = Time, y = Data)) +
@@ -131,7 +132,7 @@ ylab <- ggdraw() +
   ) + theme(plot.margin = margin(0, 0, 0, 1))
 
 # plot
-pdf(height = 11, width = 18)
+pdf(file = "calibration_human.pdf", height = 6, width = 18)
 plot_grid(
   ylab,
   plot_grid(
