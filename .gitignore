@@ -7,3 +7,4 @@ outputs/*.out
 mcmc_rat.RData
 mcmc_mice.RData
 mcmc_human.RData
+outputs/*.RData
