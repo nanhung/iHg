@@ -628,7 +628,7 @@ legend("topleft", legend = c("Data", "Model"), lty = c(NA, 1), pch = c(1, NA))
 #### MCMC Modeling ###
 ### Using Ubuntu instead ###
 
-```{r, eval=F}
+```{r}
 out <- c("outputs/iHgRat_3365.out",
          "outputs/iHgRat_6734.out",
          "outputs/iHgRat_4880.out",
@@ -794,7 +794,7 @@ x <- mcmc_array(data = list(Ratjob1, Ratjob2, Ratjob3, Ratjob4))
 str <- ceiling(nrow(x)/2) + 1
 end <- nrow(x)
 j <- c(str:end) # discard burn-in
-sample_x <- seq(50000, 100000, 10) + 1
+sample_x <- seq(50001, 100001, 10)
 x <- x[sample_x,,]
 ```
 
@@ -825,23 +825,24 @@ pars_Study <- c("lnPLC(1.1)", "lnPKC(1.1)", "lnPBrnC(1.1)",	"lnPRestC(1.1)",	"ln
 
 pars_Dist <- c("LnPrior",	"LnPosterior",	"LnData")
 
-stan_report_error <- rstan::monitor(x[,,pars_Error], warmup = 0, digits = 4)
-stan_report_pop <- rstan::monitor(x[,,pars_Pop], warmup = 0, digits = 4)
-stan_report_Study <- rstan::monitor(x[,,pars_Study], warmup = 0,digits = 4)
+x[,,-1] |> monitor(warmup = 0)
+#stan_report_error <- rstan::monitor(x[,,pars_Error], warmup = 0, digits = 4)
+#stan_report_pop <- rstan::monitor(x[,,pars_Pop], warmup = 0, digits = 4)
+#stan_report_Study <- rstan::monitor(x[,,pars_Study], warmup = 0,digits = 4)
 ```
 
 
 # traceplot and density diagnosis
 ```{r}
-mcmc_dens_overlay(x[,,],  pars = pars_Error)
-mcmc_dens_overlay(x[,,],  pars = pars_Pop)
-mcmc_dens_overlay(x[,,],  pars = pars_Study)
-mcmc_dens_overlay(x[,,],  pars = pars_Dist)
+#mcmc_dens_overlay(x[,,],  pars = pars_Error)
+#mcmc_dens_overlay(x[,,],  pars = pars_Pop)
+#mcmc_dens_overlay(x[,,],  pars = pars_Study)
+#mcmc_dens_overlay(x[,,],  pars = pars_Dist)
 
-mcmc_trace(x[,,], pars = pars_Error)
-mcmc_trace(x[,,], pars = pars_Pop)
-mcmc_trace(x[,,], pars = pars_Study)
-mcmc_trace(x[,,], pars = pars_Dist)
+#mcmc_trace(x[,,], pars = pars_Error)
+#mcmc_trace(x[,,], pars = pars_Pop)
+#mcmc_trace(x[,,], pars = pars_Study)
+#mcmc_trace(x[,,], pars = pars_Dist)
 ```
 
 
@@ -863,10 +864,11 @@ gelman.diag(pars_X)
 # Validation
 ```{r}
 pars_name <- dimnames(x)[[3]]
+pars_name
 str <- which(pars_name == "M_lnPLC(1)")
 end <- which(pars_name == "V_lnKbrnC(1)")
 pars <- pars_name[str:end]
-mcmc_out <- x[j, , pars]
+mcmc_out <- x[, , pars]
 l <- dim(mcmc_out)[1] * dim(mcmc_out)[2]
 dim(mcmc_out) <- c(l, length(pars))
 colnames(mcmc_out) <- pars
