@@ -34,7 +34,7 @@ save(rat_mcmc, file = "outputs/iHgRat_mcmc.RData")
 rm(list = ls())
 
 # data manipulate (randon sample 20 iters from 4 chains)
-load("outputs/iHgRat_mcmc.Rdata")
+load("outputs/iHgRat_mcmc.RData")
 no_sample <- 20
 sample_iters <- sample(seq_len(dim(rat_mcmc)[1]), no_sample)
 sample_rat_mcmc <- rat_mcmc[sample_iters, , ]

@@ -34,7 +34,7 @@ save(human_mcmc, file = "outputs/iHgHuman_mcmc.RData")
 rm(list = ls())
 
 # data manipulate (randon sample 20 iters from 4 chains)
-load("outputs/iHgHuman_mcmc.Rdata")
+load("outputs/iHgHuman_mcmc.RData")
 no_sample <- 20
 sample_iters <- sample(seq_len(dim(human_mcmc)[1]), no_sample)
 sample_human_mcmc <- human_mcmc[sample_iters, , ]
