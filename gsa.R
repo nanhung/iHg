@@ -1,5 +1,6 @@
 #
 library(pksensi)
+library(ggplot2)
 
 # 
 load("outputs/iHgHuman_mcmc.RData")
@@ -12,6 +13,7 @@ str <- which(colnames(human_mcmc) == "M_lnPLC(1)")
 end <- which(colnames(human_mcmc) == "M_lnKbrnC(1)")
 pop_min <- human_mcmc[,str:end] |> apply(2, min)
 pop_max <- human_mcmc[,str:end] |> apply(2, max)
+pop_max - pop_min
 
 #
 mName <- "iHgHumanBW"
@@ -33,23 +35,39 @@ q.arg <- list(list(pop_min[1], pop_max[1]),
   list(pop_min[9], pop_max[9]) 
 )
 set.seed(1234)
-x <- rfast99(params = params, n = 512, q = q, q.arg = q.arg, replicate = 10)
+x <- rfast99(params = params, n = 10000, q = q, q.arg = q.arg, replicate = 1)
 
-
-
-
-
-
-
-conditions <- c("mgkg_flag = 1",
-                "OralExp_APAP = NDoses(2, 1, 0, 0, 0.001)",
-                "OralDose_APAP_mgkg = 20.0")
-vars <- c("lnCPL_APAP_mcgL", "lnCPL_AG_mcgL", "lnCPL_AS_mcgL")
-times <- c(0.1, 0.5, 1, 2, 3, 4, 6, 8, 12)
+# Single dose
+conditions <- c("BW0 = 64;", "BWgrowth = 0;", "Growthrate = 0;", 
+  "sex = 1;", "TChng = 0.5;", "PDose = PerDose(0.09375, 24,  0, 0.05);",
+  "IVDose = PerDose(0.0 , 24,  0, 0.003);",
+  " expowk =  PerDose(1.0, 168,  0, 0.05);", 
+  "expodur = PerDose(1.0, 1850, 0, 0.05);", "Drink = 0.0;")
+vars <- c("AUCCL", "AUCCK", "AUCCBrn")
+times <- c(12)
 out <- solve_mcsim(x, mName = mName,
                    params = params, 
                    time = times, 
                    vars = vars,
                    condition = conditions, 
                    rtol = 1e-7, atol = 1e-9)
-heat_check(out, order = "total order", show.all = T, times = c(8))
+check(out)
+
+set_theme <- theme(
+  legend.position  = "none",
+  axis.text.x      = element_blank(),
+  #axis.ticks.y     = element_line(color = "black"),
+  #axis.text.x      = element_text(color = "black"),
+  axis.ticks.x     = element_blank(),
+  #axis.line.x      = element_line(color = "black"),
+  #axis.line.y      = element_line(color = "black"),
+  #legend.key       = element_blank(),
+  axis.title       = element_blank(),
+  #legend.title     = element_blank(),  
+  #panel.background = element_blank()
+)
+
+pdf()
+heat_check(out, order = c("first order", "total order"), show.all = T, text = T) + 
+  ggtitle("Human") + theme_bw() + set_theme
+dev.off()
