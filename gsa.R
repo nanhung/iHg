@@ -2,7 +2,7 @@
 rm(list=ls())
 
 # Packages
-pacman::p_load(pksensi, ggplot2)
+pacman::p_load(pksensi, ggplot2, reshape2, dplyr, viridis)
 
 # Parameter range
 load("outputs/iHgHuman_mcmc.RData")
@@ -51,7 +51,7 @@ conditions <- c("BW0 = 64;",
                 "expowk =  1;", 
                 "expodur = 1;", 
                 "Drink = 330.0;")
-vars <- c("AUCCL", "AUCCK", "AUCCBrn")
+vars <- c("AUCCBld", "AUCCL", "AUCCK", "AUCCBrn")
 times <- c(4368)
 out <- solve_mcsim(x, mName = mName,
                    params = params, 
@@ -59,33 +59,51 @@ out <- solve_mcsim(x, mName = mName,
                    vars = vars,
                    condition = conditions, 
                    rtol = 1e-7, atol = 1e-9)
-check(out)
-out$tSI[,,1]
+mSI <- out$mSI
+iSI <- out$iSI
+dim(mSI) <- dim(iSI) <- c(9,4)
+colnames(mSI) <- colnames(iSI) <- vars
+rownames(mSI) <- rownames(iSI) <- params
+x1 <- melt(mSI) |> `colnames<-`(c("parameter", "variable", "index")) |>
+  mutate(order = "main effect", specice = "human", exposure = "330")
+x2 <- melt(iSI) |> `colnames<-`(c("parameter", "variable", "index")) |>
+  mutate(order = "interaction", specice = "human", exposure = "330")
+rbind(x1 , x2)
 
+#
+conditions[11] <- "Drink = 15000.0;"
+out <- solve_mcsim(x, mName = mName,
+                   params = params, 
+                   time = times, 
+                   vars = vars,
+                   condition = conditions, 
+                   rtol = 1e-7, atol = 1e-9)
+mSI <- out$mSI
+iSI <- out$iSI
+dim(mSI) <- dim(iSI) <- c(9,4)
+colnames(mSI) <- colnames(iSI) <- vars
+rownames(mSI) <- rownames(iSI) <- params
+x3 <- melt(mSI) |> `colnames<-`(c("parameter", "variable", "index")) |>
+  mutate(order = "main effect", specice = "human", exposure = "15000")
+x4 <- melt(iSI) |> `colnames<-`(c("parameter", "variable", "index")) |>
+  mutate(order = "interaction", specice = "human", exposure = "15000")
 
+x_total <- do.call(rbind, list(x1, x2, x3 ,x4))
+x_total$order <- factor(x_total$order, level=c("interaction", "first order"))
 
-
-
-
-df=data.frame(
-  year=rep(c("2010","2011"),each=4),
-  treatment=rep(c("Impact","Control")),
-  type=rep(c("Phylum1","Phylum2"),each=2),
-  total=sample(1:100,8))
-ggplot(df, aes(x = year, y = total, fill = type)) +
-  geom_bar(position = "stack", stat = "identity") +
-  facet_wrap( ~ treatment)
-
-
-
-# Plot
 set_theme <- theme(
-  legend.position  = "none",
-  axis.text.x      = element_blank(),
-  axis.ticks.x     = element_blank(),
+  legend.position  = "top",
+  legend.title     = element_blank(),
   axis.title       = element_blank(),
 )
-pdf()
-heat_check(out, order = c("first order", "total order"), show.all = T, text = T) + 
-  ggtitle("Human") + theme_bw() + set_theme
-dev.off()
+
+pdf(width=11)
+ggplot(x_total, aes(x = parameter, y = index, fill=order)) +
+  geom_bar(position = "stack", stat = "identity") + 
+  coord_flip() +
+  facet_grid(exposure ~ variable) + 
+  theme_bw() +
+  ggtitle("Human") +
+  scale_fill_viridis(discrete = TRUE, direction = -1, end = 0.8) + 
+  set_theme
+dev.off()  
