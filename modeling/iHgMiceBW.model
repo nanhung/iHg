@@ -1,9 +1,8 @@
 #------------------------------------------------------------------------------
 # iHg.model --- dynamic body weight (study-specific) and first order GI absorption
-# Version 1.0  
+# Version 2.0  --- set up State variables to zero in the Initial section
 #   
-# Author: YL, FB, NH, Updated: May 20, 2022
-#------------------------------------------------------------------------------
+# Author: YL, FB, NH, Updated: Jan 7, 2024
 #------------------------------------------------------------------------------
 # STATE VARIABLES for the model (for which ODEs are provided).
 
@@ -14,6 +13,7 @@ States = {AGI,          # ... gut tissue (ug)
           ABrn,         # ... brain (ug)
           ARest,        # ... rest of the body (ug)
           
+          AUCCBld,      # AUC of iHg in blood (ug*hr/L)          
           AUCCL,        # AUC of iHg in liver (ug*hr/L)
           AUCCK,        # AUC of iHg in kidney (ug*hr/L)
           AUCCRest,     # AUC of iHg in carcass (ug*hr/L)
@@ -209,11 +209,32 @@ Ve = 1.0; #overall error variance
 #------------------------------------------------------------------------------
 # MODEL INITIALIZATION section.
 Initialize {
+  AGI = 0.0;           # ... gut tissue (ug)
+  A_in = 0.0;          # ... total intake (ug)
+  AL = 0.0;            # ... liver (ug)
+  AK = 0.0;            # ... kidney (ug)
+  ABrn = 0.0;          # ... brain (ug)
+  ARest = 0.0;         # ... rest of the body (ug)
+  
+  AUCCBld = 0.0;       # AUC of iHg in blood (ug*hr/L)          
+  AUCCL = 0.0;         # AUC of iHg in liver (ug*hr/L)
+  AUCCK = 0.0;         # AUC of iHg in kidney (ug*hr/L)
+  AUCCRest = 0.0;      # AUC of iHg in carcass (ug*hr/L)
+  AUCCBrn = 0.0;       # AUC of iHg in brain (ug*hr/L) 
+  AunabsGI = 0.0;      # Unabsorbed iHg  (ug)
+  AabsGI = 0.0;        # Absorbed iHg by GI  (ug)
+  Afeces_bile = 0.0;   # Amount excreted via fecal elimination (ug)
+  ABldug = 0.0;        # Amount of iHg in blood
+  ABrnExcrug = 0.0;    # Amount excreted via active brain excretion (ug)
+  Aurineug = 0.0;      # Amount excreted via urinary elimination (ug)
+  Afecesug = 0.0;      # Amount excreted via fecal elimination (ug)
+  
   # partition coefficients   
   PL	=	exp(lnPLC);
   PK	=	exp(lnPKC);
   PBrn	=	exp(lnPBrnC);
   PRest	=	exp(lnPRestC);
+  
 }
 # End of MODEL INITIALIZATION.
 #------------------------------------------------------------------------------
@@ -245,7 +266,6 @@ Dynamics {
    VBld = VBldC*BW;                    # kg, blood
    VBrn = VBrnC*BW;                    # kg, brain
    VRest = (0.93*BW)-VK-VL-VBld-VBrn;  # kg, Rest of body 
-  
   
    # Assign an initial value for each state.
    KGavage = (BW * PDose *   expowk * expodur) / TChng;   # PO dose rate (into GI) (ug/hr)
@@ -282,7 +302,9 @@ Dynamics {
    # blood
    RBld = (((QRest*CVRest)+(QK*CVK)+(QL*CVL)+(QBrn*CVBrn) -(QC*CBld))) + KIV ; #ug/hr
    dt(ABldug) = RBld;                          # ug, Amount of the feces compartment
+   dt(AUCCBld) = CBld;                         # ug*hr/L, Area under curve of Hg  in blood
    ABld=ABldug*1;                              # For likelihood calculation 
+
    
    # the kidney
    RK = QK*(CBld-CVK) -(Kurine *AK);           # ug/hr, Rate of change in the kidney

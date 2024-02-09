@@ -40,13 +40,19 @@ set.seed(1234)
 x <- rfast99(params = params, n = 10000, q = q, q.arg = q.arg, replicate = 1)
 
 # Single dose simulation
-conditions <- c("BW0 = 64;", "BWgrowth = 0;", "Growthrate = 0;", 
-  "sex = 1;", "TChng = 0.5;", "PDose = PerDose(0.09375, 24,  0, 0.05);",
-  "IVDose = PerDose(0.0 , 24,  0, 0.003);",
-  " expowk =  PerDose(1.0, 168,  0, 0.05);", 
-  "expodur = PerDose(1.0, 1850, 0, 0.05);", "Drink = 0.0;")
+conditions <- c("BW0 = 64;", 
+                "BWgrowth = 0;", 
+                "Growthrate = 0;", 
+                "sex = 1;", 
+                "TChng = 0.5;", 
+                "PDose = PerDose(0.0, 24,  0, 0.05);",
+                "IVDose = PerDose(0.0 , 24,  0, 0.003);",
+                "Drink = 330.0",
+                "expowk =  1;", 
+                "expodur = 1;", 
+                "Drink = 330.0;")
 vars <- c("AUCCL", "AUCCK", "AUCCBrn")
-times <- c(12)
+times <- c(4368)
 out <- solve_mcsim(x, mName = mName,
                    params = params, 
                    time = times, 
@@ -54,6 +60,23 @@ out <- solve_mcsim(x, mName = mName,
                    condition = conditions, 
                    rtol = 1e-7, atol = 1e-9)
 check(out)
+out$tSI[,,1]
+
+
+
+
+
+
+df=data.frame(
+  year=rep(c("2010","2011"),each=4),
+  treatment=rep(c("Impact","Control")),
+  type=rep(c("Phylum1","Phylum2"),each=2),
+  total=sample(1:100,8))
+ggplot(df, aes(x = year, y = total, fill = type)) +
+  geom_bar(position = "stack", stat = "identity") +
+  facet_wrap( ~ treatment)
+
+
 
 # Plot
 set_theme <- theme(

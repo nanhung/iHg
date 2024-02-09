@@ -1,10 +1,9 @@
 #------------------------------------------------------------------------------
 # iHg.model --- dynamic body weight (study-specific) and first order GI absorption
-# Version 1.0  
+# Version 2.0  --- set up State variables to zero in the Initial section
 #   
-# Author: YL, FB, NH, Updated: May 20, 2022
+# Author: YL, FB, NH, Updated: Jan 7, 2024
 #------------------------------------------------------------------------------
-# cd ./mcsim-6.2.0/EB-iHg/PK/modeling/iHg/HumanHier  # 
 #------------------------------------------------------------------------------
 # STATE VARIABLES for the model (for which ODEs are provided).
 
@@ -15,6 +14,7 @@ States = {AGI,          # ... gut tissue (ug)
           ABrn,         # ... brain (ug)
           ARest,        # ... rest of the body (ug)
           
+          AUCCBld,      # AUC of iHg in blood (ug*hr/L)     
           AUCCL,        # AUC of iHg in liver (ug*hr/L)
           AUCCK,        # AUC of iHg in kidney (ug*hr/L)
           AUCCRest,     # AUC of iHg in carcass (ug*hr/L)
@@ -124,8 +124,8 @@ lnPKC	=	5.775	;      # scale constant for partition coefficient of kidney-blood,
 lnPBrnC	=	-0.1972	;  # scale constant for partition coefficient of brain-blood, logged
 lnPRestC =	0.0862 ; # scale constant for partition coefficient of carcass (rest of the body)-blood, logged
 
-lnKabsC	=	-2.9957	;        # scale constant for iHg absorption from GI to liver, logged 
-lnKunabsC	=	-0.7985	;      # scale constant for iHg elimination of unabsorbed from GI, loggd 
+lnKabsC	=	-3.411	;        # scale constant for iHg absorption from GI to liver, logged 
+lnKunabsC	=	-0.821	;      # scale constant for iHg elimination of unabsorbed from GI, loggd 
 lnKbileC	=		0.029;       # scale constant for iHg elimination of absorbed iHg from liver via bile,  logged 
 lnKurineC	=		-2.5257;     # scale constant for iHg elimination of absorbed iHg from kidney via urine,  logged 
 lnKbrnC	=	-3.381;          # scale constant for iHg elimination from brain, logged
@@ -137,14 +137,14 @@ PBrn   =  1;    # Brain/blood PC
 PRest  =  1;    # Rest of body/blood PC
 
 # Blood flow rates to compartments as fraction of cardiac output
-QCC =     14;     #L/hr/kg^0.75, Cardiac output (Brown 1997, Forsyth 1968)
+QCC =     15;     #L/hr/kg^0.75, Cardiac output (Brown 1997, Forsyth 1968)
 QLC =  0.183;     #Fraction blood flow to liver (Brown 1997, Fisher 2000)
 QKC =  0.141;     #Fraction blood flow to kidney (Brown 1997, Forsyth 1968)
-QBrnC =  0.033 ;  #Fraction blood flow to brain  (Brown 1997; Davies, 1993)
+QBrnC =  0.02 ;  #Fraction blood flow to brain  (Brown 1997; Davies, 1993)
 
 # volume of compartments as fraction of body weight
-VLC =  0.035 ;    #Fractional liver tissue  (Brown 1997; Davies, 1993)
-VKC =  0.0084 ;   #Fractional kidney tissue  (Brown 1997; Davies, 1993)
+VLC =  0.0366 ;    #Fractional liver tissue  (Brown 1997; Davies, 1993)
+VKC =  0.0073 ;   #Fractional kidney tissue  (Brown 1997; Davies, 1993)
 VBrnC =  0.0057 ;  #Fractional brain tissue  (Brown 1997; Davies, 1993)
 VBldC =  0.074 ;  #Fractional blood (Brown 1997; Davies, 1993)
 
@@ -165,16 +165,16 @@ TChng 	= 0.05;	# IV infusion/gavage duration (hour); TCE TChng 	= 0.003;	Chiu 20
 #          Population mean for model parameters
 #-----------------------------------------------------------------------
 
-M_lnPLC;
-M_lnPKC;
-M_lnPBrnC;
-M_lnPRestC;
+M_lnPLC = 1.0;
+M_lnPKC = 1.0;
+M_lnPBrnC = 1.0;
+M_lnPRestC = 1.0;
 
-M_lnKabsC;
-M_lnKunabsC;
-M_lnKbileC;
-M_lnKurineC;
-M_lnKbrnC;
+M_lnKabsC = 1.0;
+M_lnKunabsC = 1.0;
+M_lnKbileC = 1.0;
+M_lnKurineC = 1.0;
+M_lnKbrnC = 1.0;
 
 
 #-----------------------------------------------------------------------
@@ -208,11 +208,32 @@ Ve = 1.0; #overall error variance
 #------------------------------------------------------------------------------
 # MODEL INITIALIZATION section.
 Initialize {
+  AGI = 0.0;           # ... gut tissue (ug)
+  A_in = 0.0;          # ... total intake (ug)
+  AL = 0.0;            # ... liver (ug)
+  AK = 0.0;            # ... kidney (ug)
+  ABrn = 0.0;          # ... brain (ug)
+  ARest = 0.0;         # ... rest of the body (ug)
+  
+  AUCCBld = 0.0;       # AUC of iHg in blood (ug*hr/L)          
+  AUCCL = 0.0;         # AUC of iHg in liver (ug*hr/L)
+  AUCCK = 0.0;         # AUC of iHg in kidney (ug*hr/L)
+  AUCCRest = 0.0;      # AUC of iHg in carcass (ug*hr/L)
+  AUCCBrn = 0.0;       # AUC of iHg in brain (ug*hr/L) 
+  AunabsGI = 0.0;      # Unabsorbed iHg  (ug)
+  AabsGI = 0.0;        # Absorbed iHg by GI  (ug)
+  Afeces_bile = 0.0;   # Amount excreted via fecal elimination (ug)
+  ABldug = 0.0;        # Amount of iHg in blood
+  ABrnExcrug = 0.0;    # Amount excreted via active brain excretion (ug)
+  Aurineug = 0.0;      # Amount excreted via urinary elimination (ug)
+  Afecesug = 0.0;      # Amount excreted via fecal elimination (ug)
+  
   # partition coefficients   
   PL	=	exp(lnPLC);
   PK	=	exp(lnPKC);
   PBrn	=	exp(lnPBrnC);
   PRest	=	exp(lnPRestC);
+  
 }
 # End of MODEL INITIALIZATION.
 #------------------------------------------------------------------------------
@@ -244,7 +265,6 @@ Dynamics {
    VBld = VBldC*BW;                    # kg, blood
    VBrn = VBrnC*BW;                    # kg, brain
    VRest = (0.93*BW)-VK-VL-VBld-VBrn;  # kg, Rest of body 
-  
   
    # Assign an initial value for each state.
    KGavage = (BW * PDose *   expowk * expodur) / TChng;   # PO dose rate (into GI) (ug/hr)
@@ -281,7 +301,9 @@ Dynamics {
    # blood
    RBld = (((QRest*CVRest)+(QK*CVK)+(QL*CVL)+(QBrn*CVBrn) -(QC*CBld))) + KIV ; #ug/hr
    dt(ABldug) = RBld;                          # ug, Amount of the feces compartment
+   dt(AUCCBld) = CBld;                         # ug*hr/L, Area under curve of Hg  in blood
    ABld=ABldug*1;                              # For likelihood calculation 
+
    
    # the kidney
    RK = QK*(CBld-CVK) -(Kurine *AK);           # ug/hr, Rate of change in the kidney
